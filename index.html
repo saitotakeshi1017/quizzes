@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Schmandt-Besserat</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1a1f2e;--s1:#222840;--s2:#2a3352;--border:#334066;
+  --pink:#e8a0b0;--lav:#9b8fc7;--mint:#7ec8a4;--amber:#e8c080;
+  --text:#e8eaf6;--muted:#7080a8;--correct:#7ec8a4;--wrong:#e08888;
+  --mint-d:rgba(126,200,164,.13);--amber-d:rgba(232,192,128,.13);--lav-d:rgba(155,143,199,.13);
+}
+body{font-family:'Quicksand',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+
+/* Loading */
+#loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:14px}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--lav);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Login */
+#login-screen{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;z-index:100;padding:24px}
+.login-card{background:var(--s1);border:1px solid rgba(155,143,199,.45);border-radius:24px;padding:36px 28px;text-align:center;max-width:360px;width:100%;box-shadow:0 0 32px rgba(155,143,199,.2)}
+.login-card h1{font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px}
+.login-card p{font-size:13px;color:var(--muted);margin-bottom:28px;line-height:1.6}
+.google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px;border-radius:14px;border:1.5px solid #4a5580;background:var(--s2);color:#e8eaf6;font-family:'Quicksand',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s}
+.google-btn:hover{border-color:var(--lav);background:#2e3660;box-shadow:0 0 14px rgba(155,143,199,.4)}
+.google-btn img{width:20px;height:20px}
+
+/* App */
+.app{max-width:480px;margin:0 auto;padding:16px 14px 60px;min-height:100vh}
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.brand{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.04em;line-height:1.4}
+.hdr-right{display:flex;align-items:center;gap:6px}
+.hbtn{font-family:'Quicksand',sans-serif;font-size:10px;font-weight:700;padding:5px 9px;border-radius:100px;border:1px solid #4a5580;background:#222840;color:#b0b8d8;cursor:pointer;white-space:nowrap;transition:all .2s}
+.hbtn:hover{color:#fff;border-color:#9b8fc7;background:#2e3660;box-shadow:0 0 10px rgba(155,143,199,.4)}
+.user-avatar{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--lav);object-fit:cover;cursor:pointer}
+.streak{display:flex;align-items:center;gap:5px;background:var(--s1);border:1px solid var(--border);border-radius:100px;padding:5px 10px;font-size:12px;font-weight:700;color:var(--amber)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.stat{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:9px 4px;text-align:center}
+.sv{font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:500;color:var(--text);display:block}
+.sl{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:1px;display:block}
+.prog-wrap{margin-bottom:12px}
+.prog-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.prog-track{height:7px;background:var(--s2);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--lav),var(--pink));border-radius:4px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.q-grid-wrap{margin-bottom:14px}
+.q-grid-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:7px}
+.q-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}
+.qb{font-family:'Quicksand',sans-serif;font-size:12px;font-weight:700;padding:7px 0;border-radius:9px;border:1.5px solid #4a5580;background:var(--s2);color:#b0b8d8;cursor:pointer;text-align:center;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.qb:hover{color:#fff;border-color:var(--lav);background:#2e3660;box-shadow:0 0 12px rgba(155,143,199,.5)}
+.qb.cur{border-color:var(--lav);background:var(--lav);color:#fff}
+.qb.done{border-color:var(--mint);background:var(--mint-d);color:var(--mint)}
+.qb.err{border-color:var(--wrong);background:rgba(224,136,136,.1);color:var(--wrong)}
+.qb.hint{border-color:var(--amber);background:var(--amber-d);color:var(--amber)}
+.card{background:var(--s1);border:1px solid rgba(155,143,199,.45);border-radius:20px;padding:20px;margin-bottom:12px;position:relative;overflow:hidden;box-shadow:0 0 18px rgba(155,143,199,.3)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--lav),var(--pink))}
+.q-meta{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.q-num{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--lav)}
+.q-info{font-size:10px;background:var(--lav-d);border:1px solid rgba(155,143,199,.2);border-radius:100px;padding:2px 9px;color:var(--muted);font-weight:700}
+.q-solve{font-size:10px;background:var(--amber-d);border:1px solid rgba(232,192,128,.25);border-radius:100px;padding:2px 9px;color:var(--amber);font-weight:700}
+.q-text{font-size:15px;color:var(--text);line-height:1.65;margin-bottom:14px;font-weight:600;padding-bottom:13px;border-bottom:1px solid var(--border)}
+.a-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mint);margin-bottom:11px}
+.a-text{font-size:15px;color:var(--text);line-height:2.9}
+.bw{display:inline-block;vertical-align:middle;margin:0 1px}
+.bw-inp{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;background:var(--s2);border:2px solid var(--lav);border-radius:8px;color:var(--text);padding:3px 7px;outline:none;text-align:center;-webkit-appearance:none;transition:border-color .15s,background .15s,color .15s}
+.bw-inp:focus{border-color:var(--pink);background:#2e3560}
+.bw-inp.ok{border-color:var(--correct)!important;background:var(--mint-d)!important;color:var(--correct)!important}
+.bw-inp.bad{animation:sh .3s ease}
+.bw-inp.shown{border-color:var(--amber);background:var(--amber-d);color:var(--amber)}
+@keyframes sh{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.fb{padding:10px 14px;border-radius:12px;font-size:13px;font-weight:700;margin-bottom:12px;display:none;align-items:center;gap:8px;line-height:1.5}
+.fb.show{display:flex}
+.fb.ok{background:var(--mint-d);border:1px solid rgba(126,200,164,.3);color:var(--correct)}
+.fb.info{background:var(--lav-d);border:1px solid rgba(155,143,199,.3);color:var(--lav)}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.btn{font-family:'Quicksand',sans-serif;font-size:14px;font-weight:700;padding:13px 12px;border-radius:14px;border:none;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.btn-next{background:var(--mint);color:#0d2018;width:100%;margin-bottom:8px}
+.btn-next:hover{box-shadow:0 0 14px rgba(126,200,164,.5);filter:brightness(1.1)}
+.btn-next:active{transform:scale(.97)}
+.btn-sm{background:var(--s2);color:#b0b8d8;border:1px solid #4a5580;font-size:13px;padding:11px 8px}
+.btn-sm:hover{color:#fff;border-color:var(--lav);background:#2e3660;box-shadow:0 0 12px rgba(155,143,199,.4)}
+.finish{display:none;text-align:center;padding:32px 12px}
+.finish.show{display:block}
+.fi{font-size:52px;margin-bottom:12px;animation:pop .6s ease}
+@keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.ft{font-size:26px;font-weight:700;color:var(--mint);margin-bottom:6px}
+.fs{font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:20px}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.sc{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center}
+.sc .sv{font-size:26px;color:var(--mint)}
+.log-overlay{position:fixed;inset:0;background:rgba(10,12,22,.85);z-index:100;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s}
+.log-overlay.open{opacity:1;pointer-events:all}
+.log-panel{background:var(--s1);border-radius:20px 20px 0 0;border-top:1px solid var(--border);padding:20px 18px 40px;width:100%;max-height:85vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.log-overlay.open .log-panel{transform:translateY(0)}
+.log-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.log-title{font-size:15px;font-weight:700;color:var(--text)}
+.log-close{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer}
+.log-total{background:var(--s2);border:1px solid rgba(155,143,199,.3);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.log-total-num{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:500;color:var(--mint)}
+.log-total-label{font-size:12px;color:var(--muted);font-weight:700;line-height:1.5}
+.log-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.log-cell{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center}
+.log-cell.has-data{border-color:rgba(126,200,164,.4);background:var(--mint-d)}
+.log-cell-num{font-size:10px;color:var(--muted);font-weight:700;display:block;margin-bottom:2px}
+.log-cell-count{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:500;color:var(--text);display:block}
+.log-cell.has-data .log-cell-count{color:var(--mint)}
+.log-cell-label{font-size:8px;color:var(--muted);display:block}
+.sync-badge{font-size:10px;color:var(--mint);font-weight:700;display:none}
+.sync-badge.show{display:inline}
+</style>
+</head>
+<body>
+
+<div id="loading-screen"><div class="spinner"></div><span style="font-size:12px;color:var(--muted)">Signing in...</span></div>
+
+<div id="login-screen">
+  <div class="login-card">
+    <div style="font-size:32px;margin-bottom:12px">📚</div>
+    <h1>Schmandt-Besserat</h1>
+    <p>SUBSchmandt-Besserat<br>Sign in with Google to save your progress across all devices.</p>
+    <button class="google-btn" id="google-signin-btn">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+      Sign in with Google
+    </button>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="log-overlay" id="log-overlay">
+    <div class="log-panel">
+      <div class="log-header">
+        <span class="log-title">📋 Activity Log</span>
+        <button class="log-close" id="log-close-btn">Close</button>
+      </div>
+      <div class="log-total">
+        <span class="log-total-num" id="log-rounds">0</span>
+        <span class="log-total-label">Full rounds completed<br><span style="font-size:10px;font-weight:400;color:var(--muted)">All 24 questions answered correctly</span></span>
+      </div>
+      <div class="q-grid-label" style="margin-bottom:8px">Per-question clears</div>
+      <div class="log-grid" id="log-grid"></div>
+    </div>
+  </div>
+
+  <div class="app">
+    <div class="hdr">
+      <span class="brand">Schmandt-Besserat<br>SUBSchmandt-Besserat</span>
+      <div class="hdr-right">
+        <span class="sync-badge" id="sync-badge">✓ saved</span>
+        <button class="hbtn" id="grade-btn">📊 Grade</button>
+        <button class="hbtn" id="log-btn">📋 Log</button>
+        <img class="user-avatar" id="user-photo" src="" alt="user" id="signout-avatar">
+        <span class="streak">🔥 <span id="streak">0</span></span>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="sv" id="s-done">0</span><span class="sl">Done</span></div>
+      <div class="stat"><span class="sv" id="s-perf">0</span><span class="sl">Perfect</span></div>
+      <div class="stat"><span class="sv" id="s-hint">0</span><span class="sl">Hints</span></div>
+      <div class="stat"><span class="sv" id="s-best">0</span><span class="sl">Best🔥</span></div>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-row"><span>Progress</span><span id="prog-txt">0 / 24</span></div>
+      <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    </div>
+    <div class="q-grid-wrap">
+      <div class="q-grid-label">Select question</div>
+      <div class="q-grid" id="q-grid"></div>
+    </div>
+    <div id="quiz-area">
+      <div class="card">
+        <div class="q-meta">
+          <span class="q-num" id="q-num">Q1</span>
+          <span class="q-info" id="q-info"></span>
+          <span class="q-solve" id="q-solve"></span>
+        </div>
+        <div class="q-text" id="q-text"></div>
+        <div class="a-label">10 blanks — turns green when correct</div>
+        <div class="a-text" id="a-text"></div>
+      </div>
+      <div class="fb" id="fb"></div>
+      <div id="next-row" style="display:none">
+        <button class="btn btn-next" id="next-btn">Next question →</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-sm" id="show-ans-btn">Show answers</button>
+        <button class="btn btn-sm" id="reset-btn">↻ Reset</button>
+      </div>
+    </div>
+    <div class="finish" id="finish">
+      <div class="fi">🌸</div>
+      <div class="ft">Round complete!</div>
+      <div class="fs" id="f-sub"></div>
+      <div class="sg">
+        <div class="sc"><span class="sv" id="f-p">0</span><span class="sl">Perfect</span></div>
+        <div class="sc"><span class="sv" id="f-h">0</span><span class="sl">Hints</span></div>
+        <div class="sc"><span class="sv" id="f-rounds">0</span><span class="sl">Total rounds</span></div>
+        <div class="sc"><span class="sv" id="f-pct">0%</span><span class="sl">Accuracy</span></div>
+      </div>
+      <button class="btn btn-next" id="restart-btn">Next round 🌸</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+const FB_CONFIG = {
+  "apiKey": "AIzaSyCpNwZQflgZk92xqOkzo8x-L1dTIoOyj5A",
+  "authDomain": "schmandt-besserat-quiz.firebaseapp.com",
+  "projectId": "schmandt-besserat-quiz",
+  "storageBucket": "schmandt-besserat-quiz.firebasestorage.app",
+  "messagingSenderId": "750786551276",
+  "appId": "1:750786551276:web:8f08216814d66b6757f4c9"
+};
+const fbApp = initializeApp(FB_CONFIG);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+const provider = new GoogleAuthProvider();
+
+const QS = [
+  {q:"What is the difference between a symbol and a sign according to Schmandt-Besserat?",full:"A [[symbol]] [[carries]] [[deep]] but [[diffuse]] [[meaning]] and [[helps]] us [[conceive]] [[ideas]]. A [[sign]] is a [[subcategory]] of [[symbol]] that [[conveys]] [[narrow]], [[precise]], and [[unambiguous]] [[information]] and is [[bound]] to [[action]]."},
+  {q:"What are the three categories of earliest symbolic evidence from the Middle Paleolithic Near East?",full:"[[First]], [[pieces]] of [[ocher]] ([[red]] [[pigment]], [[possibly]] for [[body]] [[painting]]) from [[Qafzeh]], [[Israel]]. [[Second]], [[funerary]] [[deposits]] such as [[flowers]] or [[antlers]] [[placed]] in [[burial]] [[sites]] (e.g., [[Shanidar]], ca. [[60,000]] B.C.). [[Third]], [[notched]] [[bones]], which are [[bone]] [[fragments]] [[engraved]] with [[parallel]] [[incisions]]."},
+  {q:"What two remarkable contributions did Paleolithic tallies make to information processing?",full:"[[First]], [[tallies]] [[dealt]] with [[concrete]] [[data]] rather than [[ritual]] [[symbols]]. [[Second]], they [[abstracted]] [[data]] by [[translating]] [[concrete]] [[information]] into [[abstract]] [[markings]], [[removing]] [[data]] from [[context]], and [[separating]] [[knowledge]] from the [[knower]], [[creating]] a [[cold]] and [[static]] [[visual]] [[record]]."},
+  {q:"What were the two main limitations of Paleolithic bone tallies?",full:"[[First]], the [[notches]] were [[unspecific]] and could not [[indicate]] what [[item]] was being [[counted]]; only the [[tallier]] [[knew]]. [[Second]], they [[used]] a [[one-to-one]] [[correspondence]] [[method]] and a [[single]] [[type]] of [[marking]], so they could [[handle]] only one [[type]] of [[data]] at a [[time]]."},
+  {q:"What made clay tokens a fundamentally new form compared to pebbles or tallies?",full:"[[Tokens]] were [[entirely]] [[manmade]] [[artifacts]] [[created]] in [[specific]] [[shapes]] ([[cones]], [[spheres]], [[disks]], [[cylinders]], [[tetrahedrons]]) from [[clay]] for the [[sole]] [[purpose]] of [[communication]] and [[record]] [[keeping]]. Each [[shape]] had a [[single]], [[discrete]], and [[unequivocal]] [[meaning]], [[unlike]] [[repurposed]] [[objects]] [[used]] for [[counting]]."},
+  {q:"What was the greatest novelty of the token system, according to Schmandt-Besserat?",full:"It [[created]] a [[system]], [[meaning]] an [[entire]] [[repertory]] of [[interrelated]] [[token]] [[types]] each with a [[discrete]] [[meaning]]. This [[made]] it [[possible]] to [[simultaneously]] [[handle]] [[information]] about [[different]] [[categories]] of [[goods]], [[achieving]] a [[complexity]] of [[data]] [[processing]] [[never]] [[reached]] [[before]]."},
+  {q:"Why does Schmandt-Besserat call the token system the first code?",full:"[[Because]] the [[token]] [[shapes]] were [[systematized]] and [[used]] according to a [[rudimentary]] [[syntax]] ([[counters]] [[arranged]] [[hierarchically]], with the [[largest]] [[units]] [[placed]] at the [[right]]). The [[system]] could also be [[transmitted]] [[intact]] from [[community]] to [[community]] across the [[Near]] [[East]]."},
+  {q:"How did tokens convey qualitative information, unlike tallies?",full:"The [[shape]] of a [[token]] [[indicated]] the [[type]] of [[commodity]] (e.g., [[cone]] = [[small]] [[measure]] of [[grain]]; [[ovoid]] = [[jar]] of [[oil]]), while the [[number]] of [[tokens]] [[indicated]] [[quantity]]. [[Tallies]] could only [[record]] [[quantity]] with no [[indication]] of what was being [[counted]]."},
+  {q:"What is Semanticity as one of the ten features that presaged Sumerian writing?",full:"Each [[token]] was [[meaningful]] and [[communicated]] [[specific]] [[information]], [[unlike]] [[notches]] on a [[tally]], which were [[ambiguous]] and [[depended]] [[entirely]] on the [[tallier]]s [[private]] [[knowledge]]."},
+  {q:"What does Independence of phonetics mean in the context of the token system?",full:"The [[tokens]] were [[concept]] [[signs]] [[standing]] for [[units]] of [[goods]] and were not [[tied]] to any [[spoken]] [[language]] or [[dialect]]. They could therefore be [[understood]] by [[people]] who [[spoke]] [[different]] [[languages]], [[making]] the [[system]] [[widely]] [[transmissible]]."},
+  {q:"What was the chief drawback of the token system's format?",full:"Its [[three-dimensionality]] was the [[chief]] [[drawback]]. While [[tangible]] and [[easy]] to [[manipulate]], the [[physical]] [[volume]] of [[tokens]] [[made]] them [[cumbersome]] in [[large]] [[quantities]], [[difficult]] to [[keep]] in [[permanent]] [[order]], and [[insufficient]] for [[recording]] [[complex]] [[messages]] beyond [[small]] [[transactions]]."},
+  {q:"What four major innovations did pictographic writing bring over the token system?",full:"[[First]], [[pictographs]] [[held]] [[information]] [[permanently]]. [[Second]], [[tablets]] [[accommodated]] more [[diversified]] [[information]] through [[spatial]] [[organization]] of the [[field]]. [[Third]], [[numerals]] were [[created]], [[ending]] [[one-to-one]] [[correspondence]]. [[Fourth]], [[writing]] [[became]] [[phonetic]], [[reducing]] the [[repertory]] of [[symbols]] and [[opening]] [[writing]] to all [[subjects]] of [[human]] [[endeavor]]."},
+  {q:"What are the three major phases of information processing evolution in the prehistoric Near East?",full:"[[First]], during the [[Middle]] and [[late]] [[Upper]] [[Paleolithic]] (ca. [[30,000]] to [[12,000]] B.C.), [[tallies]] [[referred]] to one [[unit]] of an [[unspecified]] [[item]]. [[Second]], in the [[early]] [[Neolithic]] (ca. [[8,000]] B.C.), [[tokens]] [[indicated]] a [[precise]] [[unit]] of a [[particular]] [[good]]. [[Third]], with [[writing]] in the [[urban]] [[period]] (ca. [[3,100]] B.C.), it [[became]] [[possible]] to [[record]] the [[name]] of the [[sponsor]] or [[recipient]] of [[transactions]]."},
+  {q:"What does Schmandt-Besserat identify as the main debt of the token system to Paleolithic tallies?",full:"The [[principle]] of [[abstracting]] [[data]]. Like [[tallies]], [[tokens]] [[translated]] [[concrete]] [[information]] into [[abstract]] [[markings]], [[removed]] [[data]] from [[context]], [[separated]] [[knowledge]] from the [[knower]], and [[increased]] [[objectivity]]. The [[format]] of [[movable]] [[units]] was also [[likely]] [[inherited]] from the [[practice]] of [[counting]] with [[pebbles]]."},
+  {q:"Why did the token system spread throughout the entire Near East?",full:"[[Because]] it was [[systematized]] and [[transmitted]] as a [[full-fledged]] [[code]] from [[community]] to [[community]], with each [[token]] [[form]] [[preserving]] the [[same]] [[meaning]]. Its [[simplicity]] ([[common]] [[clay]] [[material]], [[plain]] [[forms]], [[one-to-one]] [[correspondence]], and [[independence]] from [[phonetics]]) [[made]] [[adoption]] [[easy]] across [[different]] [[linguistic]] [[groups]]."},
+  {q:"What does Openness mean as one of the ten features of the token system?",full:"The [[repertory]] of [[token]] [[shapes]] could be [[expanded]] at [[will]] by [[creating]] [[new]] [[shapes]] to [[represent]] [[new]] [[concepts]], and [[tokens]] could be [[combined]] into any [[possible]] [[set]]. This [[made]] it [[feasible]] to [[store]] an [[unlimited]] [[quantity]] of [[information]] concerning an [[unlimited]] [[number]] of [[items]]."},
+  {q:"How does Schmandt-Besserat characterize the overall significance of the Neolithic token system?",full:"She [[calls]] it the [[second]] [[step]] in the [[evolution]] of [[communication]] and [[data]] [[processing]] and a [[major]] [[turning]] [[point]]. It was the [[first]] [[use]] of [[signs]] to [[manipulate]] [[concrete]] [[commodities]] of [[daily]] [[life]], [[provided]] the [[first]] [[means]] of [[supplementing]] [[language]], and [[gave]] the [[immediate]] [[background]] for the [[invention]] of [[writing]]."},
+  {q:"What does Discreteness mean as one of the ten features that presaged Sumerian writing?",full:"The [[information]] [[conveyed]] by each [[token]] was [[specific]]. Each [[token]] [[shape]], like each [[pictograph]], was [[bestowed]] with a [[unique]] [[meaning]]. The [[incised]] [[ovoid]], for [[example]], like the [[sign]] [[ATU]] [[733]], [[stood]] for a [[unit]] of [[oil]]."},
+  {q:"What does Systematization mean as one of the ten features that presaged Sumerian writing?",full:"Each of the [[token]] [[shapes]] was [[systematically]] [[repeated]] in [[order]] to [[carry]] the [[same]] [[meaning]]. An [[incised]] [[ovoid]], for [[example]], [[always]] [[signified]] the [[same]] [[measure]] of [[oil]]."},
+  {q:"What does Codification mean as one of the ten features that presaged Sumerian writing?",full:"The [[token]] [[system]] [[consisted]] of a [[multiplicity]] of [[interrelated]] [[elements]]. [[Besides]] the [[cone]], which [[stood]] for a [[small]] [[measure]] of [[grain]], the [[sphere]] [[represented]] a [[larger]] [[measure]] of [[grain]], the [[ovoid]] [[meant]] a [[jar]] of [[oil]], the [[cylinder]] an [[animal]]. [[Consequently]], the [[token]] [[system]] [[made]] it [[feasible]], for the [[first]] [[time]], to [[deal]] [[simultaneously]] with [[information]] [[concerning]] [[different]] [[items]]."},
+  {q:"What does Arbitrariness mean as one of the ten features that presaged Sumerian writing?",full:"[[Many]] of the [[token]] [[forms]] were [[abstract]] and [[bore]] no [[visual]] [[resemblance]] to what they [[represented]]. For [[example]], the [[cylinder]] and [[lenticular]] [[disk]] [[stood]] [[respectively]] for [[one]] and [[ten]] [[animals]]. [[Others]] were [[arbitrary]] [[representations]]; for [[instance]], the [[head]] of an [[animal]] [[bearing]] a [[collar]] [[symbolized]] the [[dog]]."},
+  {q:"What does Discontinuity mean as one of the ten features that presaged Sumerian writing?",full:"[[Tokens]] of [[closely]] [[related]] [[shapes]] could [[refer]] to [[unrelated]] [[concepts]]. For [[example]], the [[lenticular]] [[disk]] [[stood]] for [[ten]] [[animals]], [[whereas]] the [[flat]] [[disk]] [[referred]] to a [[large]] [[measure]] of [[grain]]."},
+  {q:"What does Syntax mean as one of the ten features that presaged Sumerian writing?",full:"The [[tokens]] were [[organized]] according to [[set]] [[rules]]. There is [[evidence]], for [[example]], that [[tokens]] were [[arranged]] in [[lines]] of [[counters]] of the [[same]] [[kind]], with the [[largest]] [[units]] [[placed]] at the [[right]]."},
+  {q:"What does Economic content mean as one of the ten features that presaged Sumerian writing?",full:"The [[tokens]], like the [[earliest]] [[written]] [[texts]], were [[limited]] to [[handling]] [[information]] [[concerning]] [[real]] [[goods]]. It is only [[centuries]] [[later]], about [[2900]] B.C., that [[writing]] [[began]] to [[record]] [[historical]] [[events]] and [[religious]] [[texts]]."}
+];
+const N = 24;
+const SK = 'sb_quiz';
+const BLANK_COUNT = 10;
+const GRID_COLS = 82;
+
+let solveCount = new Array(N).fill(0);
+let fullRounds = 0;
+let currentUser = null;
+let cur = 0, streak = 0, best = 0, perfects = 0;
+let doneSet = new Set(), hintSet = new Set(), errSet = new Set();
+
+// ── Firebase Auth ──
+document.getElementById('google-signin-btn').addEventListener('click', async () => {
+  try { await signInWithPopup(auth, provider); } catch(e) { console.error(e); }
+});
+
+document.getElementById('user-photo').addEventListener('click', () => {
+  if(confirm('Sign out?')) signOut(auth);
+});
+
+onAuthStateChanged(auth, async (user) => {
+  document.getElementById('loading-screen').style.display = 'none';
+  if (user) {
+    currentUser = user;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('user-photo').src = user.photoURL || '';
+    await loadFromFirestore();
+    loadQ(0);
+  } else {
+    currentUser = null;
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
+});
+
+// ── Firestore ──
+async function loadFromFirestore() {
+  if (!currentUser) return;
+  try {
+    const ref = doc(db, 'users', currentUser.uid, 'quizzes', SK);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      const data = snap.data();
+      solveCount = data.solveCount || new Array(N).fill(0);
+      fullRounds = data.fullRounds || 0;
+      if (solveCount.length < N) solveCount = [...solveCount, ...new Array(N - solveCount.length).fill(0)];
+    }
+  } catch(e) { console.error('Load error:', e); }
+}
+
+async function saveToFirestore() {
+  if (!currentUser) return;
+  try {
+    const ref = doc(db, 'users', currentUser.uid, 'quizzes', SK);
+    await setDoc(ref, { solveCount, fullRounds }, { merge: true });
+    const badge = document.getElementById('sync-badge');
+    badge.classList.add('show');
+    setTimeout(() => badge.classList.remove('show'), 2000);
+  } catch(e) { console.error('Save error:', e); }
+}
+
+// ── Quiz Logic ──
+function shuffle(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function parseQ(full) {
+  const parts=[]; const re=/\[\[(.+?)\]\]/g; let last=0,m;
+  while((m=re.exec(full))!==null){if(m.index>last)parts.push({type:'text',content:full.slice(last,m.index)});parts.push({type:'key',word:m[1]});last=re.lastIndex;}
+  if(last<full.length)parts.push({type:'text',content:full.slice(last)});
+  return parts;
+}
+
+function loadQ(idx) {
+  cur = idx;
+  const q = QS[idx];
+  const parts = parseQ(q.full);
+  const keyParts = parts.filter(p => p.type === 'key');
+  const n = Math.min(BLANK_COUNT, keyParts.length);
+  const blanked = new Set(shuffle(keyParts.map(p => p.word)).slice(0, n));
+  document.getElementById('q-num').textContent = 'Q' + (cur + 1);
+  document.getElementById('q-info').textContent = n + ' blanks';
+  document.getElementById('q-solve').textContent = (solveCount[cur] || 0) === 0 ? '0 clears' : '✓ ' + solveCount[cur] + 'x';
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('next-row').style.display = 'none';
+  clearFb();
+  const at = document.getElementById('a-text'); at.innerHTML = '';
+  const wc = {};
+  parts.forEach(part => {
+    if (part.type === 'text') { at.appendChild(document.createTextNode(part.content)); }
+    else {
+      const w = part.word; wc[w] = (wc[w] || 0) + 1;
+      if (blanked.has(w) && wc[w] === 1) {
+        const wrap = document.createElement('span'); wrap.className = 'bw';
+        const inp = document.createElement('input'); inp.className = 'bw-inp';
+        inp.dataset.word = w; inp.style.width = Math.max(64, w.length * 10 + 16) + 'px';
+        inp.placeholder = '?'; inp.autocomplete = 'off'; inp.autocorrect = 'off'; inp.autocapitalize = 'none'; inp.spellcheck = false;
+        inp.addEventListener('input', () => onInput(inp));
+        inp.addEventListener('keydown', e => {
+          if (e.key === 'Enter') {
+            const v = inp.value.trim().toLowerCase(), c = inp.dataset.word.toLowerCase();
+            if (v !== '' && v !== c) { inp.classList.add('bad'); errSet.add(cur); buildGrid(); setTimeout(() => inp.classList.remove('bad'), 320); }
+          }
+        });
+        wrap.appendChild(inp); at.appendChild(wrap);
+      } else { at.appendChild(document.createTextNode(w)); }
+    }
+  });
+  buildGrid(); updateStats();
+  setTimeout(() => { const f = at.querySelector('.bw-inp'); if (f) f.focus(); }, 80);
+}
+
+function onInput(inp) {
+  if (inp.value.trim().toLowerCase() === inp.dataset.word.toLowerCase()) {
+    inp.classList.add('ok'); inp.readOnly = true;
+    const all = [...document.querySelectorAll('.bw-inp:not([readonly])')];
+    if (all.length > 0) all[0].focus(); else onComplete();
+  }
+}
+
+function onComplete() {
+  solveCount[cur] = (solveCount[cur] || 0) + 1;
+  if (!hintSet.has(cur)) perfects++;
+  doneSet.add(cur); errSet.delete(cur);
+  streak++; if (streak > best) best = streak;
+  document.getElementById('q-solve').textContent = '✓ ' + solveCount[cur] + 'x';
+  showFb('ok', 'All blanks correct! 🌸');
+  document.getElementById('next-row').style.display = '';
+  saveToFirestore();
+  buildGrid(); updateStats();
+  if (doneSet.size === N) setTimeout(onAllDone, 900);
+}
+
+function onAllDone() {
+  fullRounds++;
+  saveToFirestore();
+  document.getElementById('quiz-area').style.display = 'none';
+  document.getElementById('finish').classList.add('show');
+  const pct = Math.round((perfects / N) * 100);
+  document.getElementById('f-p').textContent = perfects;
+  document.getElementById('f-h').textContent = hintSet.size;
+  document.getElementById('f-rounds').textContent = fullRounds;
+  document.getElementById('f-pct').textContent = pct + '%';
+  document.getElementById('f-sub').textContent = pct >= 90 ? 'Outstanding! 🌸' : pct >= 70 ? "Good work! Keep drilling." : "Keep going — you've got this.";
+}
+
+document.getElementById('show-ans-btn').addEventListener('click', () => {
+  hintSet.add(cur); streak = 0;
+  document.querySelectorAll('.bw-inp').forEach(inp => { if (!inp.readOnly) { inp.value = inp.dataset.word; inp.classList.add('shown'); inp.readOnly = true; } });
+  showFb('info', 'Answers shown. Reset for new blanks.');
+  document.getElementById('next-row').style.display = '';
+  buildGrid(); updateStats();
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => loadQ(cur));
+document.getElementById('next-btn').addEventListener('click', () => { if (cur < N - 1) loadQ(cur + 1); else onAllDone(); });
+document.getElementById('restart-btn').addEventListener('click', () => {
+  perfects = 0; streak = 0; doneSet = new Set(); hintSet = new Set(); errSet = new Set();
+  document.getElementById('quiz-area').style.display = ''; document.getElementById('finish').classList.remove('show');
+  loadQ(0); updateStats();
+});
+
+function showFb(type, msg) { const el = document.getElementById('fb'); el.className = 'fb show ' + type; el.textContent = msg; }
+function clearFb() { const el = document.getElementById('fb'); el.className = 'fb'; el.textContent = ''; }
+
+function buildGrid() {
+  const g = document.getElementById('q-grid'); g.innerHTML = '';
+  for (let i = 0; i < N; i++) {
+    const b = document.createElement('button');
+    b.className = 'qb' + (i === cur ? ' cur' : '') + (doneSet.has(i) ? ' done' : '') + (hintSet.has(i) && !doneSet.has(i) ? ' hint' : '') + (errSet.has(i) && !doneSet.has(i) && !hintSet.has(i) ? ' err' : '');
+    b.textContent = i + 1; b.addEventListener('click', () => loadQ(i)); g.appendChild(b);
+  }
+}
+
+function updateStats() {
+  document.getElementById('s-done').textContent = doneSet.size;
+  document.getElementById('s-perf').textContent = perfects;
+  document.getElementById('s-hint').textContent = hintSet.size;
+  document.getElementById('s-best').textContent = best;
+  document.getElementById('streak').textContent = streak;
+  const pct = Math.round((doneSet.size / N) * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-txt').textContent = doneSet.size + ' / ' + N;
+}
+
+// ── Log ──
+document.getElementById('log-btn').addEventListener('click', () => {
+  document.getElementById('log-rounds').textContent = fullRounds;
+  const g = document.getElementById('log-grid'); g.innerHTML = '';
+  for (let i = 0; i < N; i++) {
+    const c = solveCount[i] || 0;
+    const cell = document.createElement('div');
+    cell.className = 'log-cell' + (c > 0 ? ' has-data' : '');
+    cell.innerHTML = '<span class="log-cell-num">Q' + (i + 1) + '</span><span class="log-cell-count">' + c + '</span><span class="log-cell-label">clears</span>';
+    g.appendChild(cell);
+  }
+  document.getElementById('log-overlay').classList.add('open');
+});
+document.getElementById('log-close-btn').addEventListener('click', () => document.getElementById('log-overlay').classList.remove('open'));
+document.getElementById('log-overlay').addEventListener('click', e => { if (e.target === document.getElementById('log-overlay')) document.getElementById('log-overlay').classList.remove('open'); });
+
+// ── PNG Export ──
+document.getElementById('grade-btn').addEventListener('click', () => {
+  const DPR = 2, cols = GRID_COLS, rows = Math.ceil(N / cols);
+  const W = 1080, pad = 52, titleH = 148, ch = 160, cw = (W - pad * 2) / cols;
+  const H = pad * 2 + titleH + rows * ch;
+  const canvas = document.createElement('canvas');
+  canvas.width = W * DPR; canvas.height = H * DPR;
+  const ctx = canvas.getContext('2d'); ctx.scale(DPR, DPR);
+  ctx.fillStyle = '#f8f8fb'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, pad + titleH - 8);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#1a1a2e'; ctx.font = '30px Georgia,serif'; ctx.fillText('Schmandt-Besserat', W / 2, pad + 40);
+  ctx.font = '15px Georgia,serif'; ctx.fillStyle = '#7c6fff'; ctx.fillText('Quiz Progress — Solve Count', W / 2, pad + 70);
+  ctx.font = '13px sans-serif'; ctx.fillStyle = '#999ab8';
+  ctx.fillText('Rounds: ' + fullRounds + ' · ' + new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'}), W / 2, pad + 100);
+  if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){this.beginPath();this.moveTo(x+r,y);this.lineTo(x+w-r,y);this.arcTo(x+w,y,x+w,y+r,r);this.lineTo(x+w,y+h-r);this.arcTo(x+w,y+h,x+w-r,y+h,r);this.lineTo(x+r,y+h);this.arcTo(x,y+h,x,y+h-r,r);this.lineTo(x,y+r);this.arcTo(x,y,x+r,y,r);this.closePath();};
+  }
+  const total = solveCount.reduce((a, b) => a + (b || 0), 0);
+  for (let i = 0; i < N; i++) {
+    const col = i % cols, row = Math.floor(i / cols);
+    const gx = pad + col * cw, gy = pad + titleH + row * ch;
+    const count = solveCount[i] || 0, heat = Math.min(count / 15, 1);
+    const inner = 10, bx = gx + inner, by = gy + inner, bw2 = cw - inner * 2, bh = ch - inner * 2;
+    ctx.shadowColor = 'rgba(0,0,0,0.07)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 3;
+    ctx.fillStyle = count > 0 ? `rgb(${Math.round(245-heat*55)},${Math.round(255-heat*15)},${Math.round(245-heat*55)})` : '#ffffff';
+    ctx.beginPath(); ctx.roundRect(bx, by, bw2, bh, 12); ctx.fill();
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = count > 0 ? `rgba(80,180,110,${0.4+heat*0.5})` : '#e2e2ee'; ctx.lineWidth = count > 0 ? 1.5 : 1; ctx.stroke();
+    const midX = gx + cw / 2, midY = gy + ch / 2;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = count > 0 ? '#1a4a30' : '#6666aa'; ctx.font = '800 15px Arial Black,sans-serif'; ctx.fillText('Q' + (i + 1), midX, midY - 26);
+    ctx.fillStyle = count > 0 ? '#0d2e1e' : '#444466'; ctx.font = `${count >= 100 ? 44 : 56}px Georgia,serif`; ctx.fillText(count, midX, midY + 18);
+    ctx.fillStyle = count > 0 ? '#1a5c3a' : '#aaaacc'; ctx.font = '700 12px Arial,sans-serif'; ctx.fillText('clears', midX, midY + 40);
+  }
+  ctx.textAlign = 'center'; ctx.fillStyle = '#bbbbcc'; ctx.font = '12px sans-serif';
+  ctx.fillText('Total: ' + total + ' · Rounds: ' + fullRounds + ' · ' + new Date().toLocaleTimeString(), W / 2, H - 20);
+  const a = document.createElement('a');
+  a.download = SK + '_' + new Date().toISOString().slice(0, 10) + '.png';
+  a.href = canvas.toDataURL('image/png', 1.0); a.click();
+});
+
+</script>
+</body>
+</html>
