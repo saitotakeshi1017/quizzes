@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Writing &amp; Media History</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#16120c;--s1:#201a10;--s2:#2a2216;--border:#3d3020;
+  --gold:#f0aa28;--orange:#e07030;--green:#28db68;--red:#e83030;
+  --text:#f2e8cc;--muted:#7a6840;
+  --green-d:rgba(40,219,104,.13);--orange-d:rgba(224,112,48,.14);
+  --gold-d:rgba(240,170,40,.13);--red-d:rgba(232,48,48,.12);
+}
+body{font-family:'Quicksand',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+.app{max-width:480px;margin:0 auto;padding:16px 14px 60px;min-height:100vh}
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.brand{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.04em;line-height:1.4}
+.hdr-btns{display:flex;align-items:center;gap:6px}
+.hbtn{font-family:'Quicksand',sans-serif;font-size:10px;font-weight:700;padding:5px 9px;border-radius:100px;border:1px solid var(--border);background:var(--s1);color:#b8a878;cursor:pointer;white-space:nowrap;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.hbtn:hover{color:var(--text);border-color:var(--gold);background:var(--s2);box-shadow:0 0 10px rgba(240,170,40,.35)}
+.streak{display:flex;align-items:center;gap:5px;background:var(--s1);border:1px solid var(--border);border-radius:100px;padding:5px 10px;font-size:12px;font-weight:700;color:var(--gold)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.stat{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:9px 4px;text-align:center}
+.sv{font-family:'JetBrains Mono',monospace;font-size:19px;font-weight:500;color:var(--text);display:block}
+.sl{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:1px;display:block}
+.prog-wrap{margin-bottom:12px}
+.prog-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.prog-track{height:7px;background:var(--s2);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--green));border-radius:4px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.q-grid-wrap{margin-bottom:14px}
+.q-grid-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:7px}
+.q-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.qb{font-family:'Quicksand',sans-serif;font-size:12px;font-weight:700;padding:7px 0;border-radius:9px;border:1.5px solid var(--border);background:var(--s2);color:#8a7a50;cursor:pointer;text-align:center;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.qb:hover{color:var(--text);border-color:var(--gold);background:#332a18;box-shadow:0 0 10px rgba(240,170,40,.3)}
+.qb.cur{border-color:var(--gold);background:var(--gold);color:#1a1000;box-shadow:0 0 12px rgba(240,170,40,.5)}
+.qb.done{border-color:var(--green);background:var(--green-d);color:var(--green)}
+.qb.err{border-color:var(--red);background:var(--red-d);color:var(--red)}
+.qb.hint{border-color:var(--orange);background:var(--orange-d);color:var(--orange)}
+.card{background:var(--s1);border:1px solid rgba(240,170,40,.35);border-radius:20px;padding:20px;margin-bottom:12px;position:relative;overflow:hidden;box-shadow:0 0 20px rgba(240,170,40,.12)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--orange))}
+.q-meta{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.q-num{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--gold)}
+.q-info{font-size:10px;background:var(--gold-d);border:1px solid rgba(240,170,40,.2);border-radius:100px;padding:2px 9px;color:var(--muted);font-weight:700}
+.q-solve{font-size:10px;background:var(--green-d);border:1px solid rgba(40,219,104,.2);border-radius:100px;padding:2px 9px;color:var(--green);font-weight:700}
+.q-text{font-size:15px;color:var(--text);line-height:1.65;margin-bottom:14px;font-weight:600;padding-bottom:13px;border-bottom:1px solid var(--border)}
+.a-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:11px}
+.a-text{font-size:15px;color:var(--text);line-height:2.9}
+.bw{display:inline-block;vertical-align:middle;margin:0 1px}
+.bw-inp{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;background:var(--s2);border:2px solid var(--gold);border-radius:8px;color:var(--text);padding:3px 7px;outline:none;text-align:center;-webkit-appearance:none;transition:border-color .15s,background .15s,color .15s}
+.bw-inp:focus{border-color:#ffd050;background:#332a18;box-shadow:0 0 8px rgba(240,170,40,.3)}
+.bw-inp.ok{border-color:var(--green)!important;background:var(--green-d)!important;color:var(--green)!important;box-shadow:0 0 8px rgba(40,219,104,.3)!important}
+.bw-inp.bad{animation:sh .3s ease;border-color:var(--red)!important}
+.bw-inp.shown{border-color:var(--orange);background:var(--orange-d);color:var(--orange)}
+@keyframes sh{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.fb{padding:10px 14px;border-radius:12px;font-size:13px;font-weight:700;margin-bottom:12px;display:none;align-items:center;gap:8px;line-height:1.5}
+.fb.show{display:flex}
+.fb.ok{background:var(--green-d);border:1px solid rgba(40,219,104,.3);color:var(--green)}
+.fb.info{background:var(--orange-d);border:1px solid rgba(224,112,48,.3);color:var(--orange)}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.btn{font-family:'Quicksand',sans-serif;font-size:14px;font-weight:700;padding:13px 12px;border-radius:14px;border:none;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.btn-next{background:var(--green);color:#081a0e;width:100%;margin-bottom:8px}
+.btn-next:hover{box-shadow:0 0 16px rgba(40,219,104,.5);filter:brightness(1.08)}
+.btn-next:active{transform:scale(.97)}
+.btn-sm{background:var(--s2);color:#b8a878;border:1px solid var(--border);font-size:13px;padding:11px 8px}
+.btn-sm:hover{color:var(--text);border-color:var(--gold);background:#332a18;box-shadow:0 0 10px rgba(240,170,40,.25)}
+.btn-sm:active{transform:scale(.97)}
+.finish{display:none;text-align:center;padding:32px 12px}
+.finish.show{display:block}
+.fi{font-size:52px;margin-bottom:12px;animation:pop .6s ease}
+@keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.ft{font-size:26px;font-weight:700;color:var(--green);margin-bottom:6px}
+.fs{font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:20px}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.sc{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center}
+.sc .sv{font-size:26px;color:var(--green)}
+.log-overlay{position:fixed;inset:0;background:rgba(6,4,2,.88);z-index:100;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s}
+.log-overlay.open{opacity:1;pointer-events:all}
+.log-panel{background:var(--s1);border-radius:20px 20px 0 0;border-top:1px solid var(--border);padding:20px 18px 40px;width:100%;max-height:85vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.log-overlay.open .log-panel{transform:translateY(0)}
+.log-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.log-title{font-size:15px;font-weight:700;color:var(--text)}
+.log-close{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer}
+.log-total{background:var(--s2);border:1px solid rgba(240,170,40,.25);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.log-total-num{font-family:'JetBrains Mono',monospace;font-size:36px;font-weight:500;color:var(--green)}
+.log-total-label{font-size:12px;color:var(--muted);font-weight:700;line-height:1.5}
+.log-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.log-cell{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center}
+.log-cell.has-data{border-color:rgba(40,219,104,.4);background:var(--green-d)}
+.log-cell-num{font-size:10px;color:var(--muted);font-weight:700;display:block;margin-bottom:2px}
+.log-cell-count{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:500;color:var(--text);display:block}
+.log-cell.has-data .log-cell-count{color:var(--green)}
+.log-cell-label{font-size:8px;color:var(--muted);display:block}
+</style>
+</head>
+<body>
+<div class="log-overlay" id="log-overlay">
+  <div class="log-panel">
+    <div class="log-header"><span class="log-title">📋 Activity Log</span><button class="log-close" id="log-close-btn">Close</button></div>
+    <div class="log-total"><span class="log-total-num" id="log-rounds">0</span><span class="log-total-label">Full rounds completed<br><span style="font-size:10px;font-weight:400;color:var(--muted)">All questions answered correctly</span></span></div>
+    <div class="q-grid-label" style="margin-bottom:8px">Per-question clears</div>
+    <div class="log-grid" id="log-grid"></div>
+  </div>
+</div>
+<div class="app">
+  <div class="hdr">
+    <span class="brand">Writing &amp; Media History<br>Token System · Alphabet · McLuhan</span>
+    <div class="hdr-btns">
+      <button class="hbtn" id="log-btn">📋 Log</button>
+      <span class="streak">🔥 <span id="streak">0</span></span>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><span class="sv" id="s-done">0</span><span class="sl">Done</span></div>
+    <div class="stat"><span class="sv" id="s-perf">0</span><span class="sl">Perfect</span></div>
+    <div class="stat"><span class="sv" id="s-hint">0</span><span class="sl">Hints</span></div>
+    <div class="stat"><span class="sv" id="s-best">0</span><span class="sl">Best🔥</span></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-row"><span>Progress</span><span id="prog-txt">0 / 10</span></div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="q-grid-wrap">
+    <div class="q-grid-label">Select question</div>
+    <div class="q-grid" id="q-grid"></div>
+  </div>
+  <div id="quiz-area">
+    <div class="card">
+      <div class="q-meta"><span class="q-num" id="q-num">Q1</span><span class="q-info" id="q-info"></span><span class="q-solve" id="q-solve"></span></div>
+      <div class="q-text" id="q-text"></div>
+      <div class="a-label">Blanks — turns green instantly when correct</div>
+      <div class="a-text" id="a-text"></div>
+    </div>
+    <div class="fb" id="fb"></div>
+    <div id="next-row" style="display:none"><button class="btn btn-next" id="next-btn">Next question →</button></div>
+    <div class="btn-row">
+      <button class="btn btn-sm" id="show-ans-btn">Show answers</button>
+      <button class="btn btn-sm" id="reset-btn">↻ Reset blanks</button>
+    </div>
+  </div>
+  <div class="finish" id="finish">
+    <div class="fi">🌿</div><div class="ft">Round complete!</div>
+    <div class="fs" id="f-sub"></div>
+    <div class="sg">
+      <div class="sc"><span class="sv" id="f-p">0</span><span class="sl">Perfect</span></div>
+      <div class="sc"><span class="sv" id="f-h">0</span><span class="sl">Hints</span></div>
+      <div class="sc"><span class="sv" id="f-rounds">0</span><span class="sl">Total rounds</span></div>
+      <div class="sc"><span class="sv" id="f-pct">0%</span><span class="sl">Accuracy</span></div>
+    </div>
+    <button class="btn btn-next" id="restart-btn">Next round 🌿</button>
+  </div>
+</div>
+<script>
+const QS=[
+{q:"In archaeology, how are 'symbols' and 'signs' defined, and what is the key characteristic of symbols according to Schmandt-Besserat (2024)?",full:"In [[archaeology]], [[symbols]] are things whose [[special]] [[meaning]] allows humans to [[conceive]], [[express]], and [[communicate]] [[ideas]] in general. [[Signs]] are a [[subcategory]] of [[symbols]] — they convey [[meaning]] but carry [[narrow]], [[precise]], and [[unambiguous]] [[information]]. Most crucially, the [[meaning]] of [[symbols]] cannot be [[perceived]] by the [[senses]] or by [[logic]] — it can only be [[learned]] from those who [[use]] them. As a consequence, when a [[culture]] [[vanishes]], the [[symbols]] left behind become [[enigmatic]], for there is no longer anyone [[initiated]] into their [[significance]]."},
+{q:"Describe the sequence of key developments in prehistoric communication from the Lower Paleolithic to the Neolithic, including approximate dates and representative artifacts or events.",full:"The [[Lower Paleolithic]] (ca. [[600,000]] y.a.) saw the emergence of [[tool making]] and [[grammar]]. By [[300,000]] y.a. in the early [[Middle Paleolithic]], [[spoken language]] appeared alongside early forms of [[Homo sapiens]]. Around [[60,000]] y.a., [[ocher]] and [[funerary]] items like flowers and antlers were used as [[symbols]] with [[magico-religious]] meaning — the first [[symbolic]] rather than [[functional]] use of objects. By [[28,000]] y.a., [[iconic]] [[symbols]] such as animal [[carvings]] appeared (e.g., the horse carving at Hayonim Cave). The [[Neolithic]] (ca. [[15,000]] y.a. onward) brought [[agriculture]], [[settling]], and the first [[information storing]] system, culminating in the [[token]] system of [[Mesopotamia]] (ca. [[4,000]] B.C.) — the earliest [[precursor]] of [[writing]]."},
+{q:"Why was tallying considered the first form of 'data processing,' and in what three ways did notched signs abstract data, according to Schmandt-Besserat?",full:"[[Tallying]] represented the first attempt at [[storing]] and [[communicating]] [[concrete]] [[information]] in the Near East. Unlike [[ritual]] [[symbols]], [[tallies]] dealt with [[concrete]] [[data]] — they [[translated]] [[perceptible]] [[physical]] [[phenomena]] (like [[lunar]] phases) rather than [[evoking]] [[intangible]] aspects of a [[cosmology]]. The three ways notched signs abstracted data were: (1) they [[translated]] [[concrete]] information into [[abstract]] [[markings]]; (2) they [[removed]] the [[data]] from their [[context]] — e.g., a moon [[sighting]] was [[abstracted]] from [[simultaneous]] events like [[atmospheric]] or [[social]] conditions; (3) they [[separated]] [[knowledge]] from the [[knower]], presenting data in a [[cold]], [[static]] visual form rather than in the [[hot]] and [[flexible]] [[oral]] medium that involves voice [[modulation]] and body [[gestures]]."},
+{q:"How did Schmandt-Besserat define the Neolithic token, and what conceptual leap made it fundamentally different from tallies?",full:"[[Tokens]] were [[artifacts]] created in specific [[shapes]] — such as [[cones]], [[spheres]], [[disks]], [[cylinders]], and [[tetrahedrons]] — from an [[amorphous]] [[clay]] mass, for the unique purpose of [[communication]] and [[record keeping]]. The key [[conceptual]] leap was to [[endow]] each token [[shape]] with a [[specific]], [[discrete]] [[meaning]]. Unlike [[tallies]], which had an [[infinite]] number of possible [[interpretations]] and were [[meaningless]] out of [[context]], each clay token was a [[distinct]] [[sign]] with a [[single]], [[unequivocal]] [[significance]] — understandable to anyone [[initiated]] into the [[system]]. Tokens thus [[presaged]] [[pictography]]: like later [[Sumerian]] [[pictographs]], each token was a '[[concept]] [[sign]].' The [[system]] was [[fixed]] but [[open]] — new [[signs]] could be added at will."},
+{q:"What were the main advantages of the Neolithic token system over previous counting methods such as tallying or gathering pebbles, according to Schmandt-Besserat?",full:"The system had two groups of advantages. Group A — [[simplicity]]: [[clay]] was a [[common]] [[material]] requiring no [[special]] [[skills]] or [[tools]]; token [[forms]] were [[plain]] and easy to [[duplicate]]; the system was based on a [[one-to-one]] [[correspondence]], the [[simplest]] method for dealing with [[quantities]]; and tokens stood for [[units]] of [[goods]], being [[independent]] of [[phonetics]] and [[meaningful]] in any [[dialect]]. Group B — new [[data processing]] [[performances]]: it was the first [[mnemonic]] [[device]] able to [[handle]] and [[store]] an [[unlimited]] quantity of data; it gave greater [[flexibility]] in [[manipulating]] [[information]], allowing one to [[add]], [[subtract]], and [[rectify]] data at will; and it [[enhanced]] [[logic]] and [[rational]] [[decision-making]] by allowing scrutiny of [[complex]] [[data]]."},
+{q:"List all ten features of the token system that foreshadow Sumerian pictography, giving a brief example or explanation for each.",full:"(1) [[Semanticity]]: each [[token]] was [[meaningful]] and [[communicated]] [[information]]. (2) [[Discreteness]]: each token [[shape]] had a [[unique]] [[meaning]] — e.g., the [[incised]] [[ovoid]] stood for a [[unit]] of [[oil]]. (3) [[Systematization]]: each shape was [[systematically]] [[repeated]] to carry the same [[meaning]]. (4) [[Codification]]: a [[multiplicity]] of [[interrelated]] elements allowed simultaneous handling of [[different]] [[items]] for the [[first]] time. (5) [[Openness]]: the [[repertory]] could be [[expanded]] at will, storing an [[unlimited]] quantity of [[information]]. (6) [[Arbitrariness]]: many forms were [[abstract]] — e.g., the [[cylinder]] stood for one animal, the [[lenticular]] [[disk]] for ten. (7) [[Discontinuity]]: closely related shapes could refer to [[unrelated]] [[concepts]]. (8) [[Independence]] of [[phonetics]]: tokens were [[concept]] [[signs]] understandable across [[languages]]. (9) [[Syntax]]: tokens were arranged by [[set]] [[rules]], with [[largest]] units at the [[right]]. (10) [[Economic]] [[content]]: tokens only handled [[real]] [[goods]] — historical/religious texts came only around [[2900]] B.C."},
+{q:"What does McLuhan mean by 'the medium is the message,' and how does a medium function as an extension of human faculties?",full:"McLuhan argues that in [[operational]] and [[practical]] fact, 'the medium is the message.' This means that the [[personal]] and [[social]] [[consequences]] of any [[medium]] result not primarily from its [[content]] but from the [[new scale]] [[introduced]] into our [[affairs]] by each [[extension]] of [[ourselves]] — i.e., by any new [[technology]]. A [[medium]] is understood as an [[extension]] of human [[faculties]] — the wheel as an extension of the [[foot]], clothing as an extension of [[skin]]. What matters is how the [[form]] of the [[medium]] [[reshapes]] [[patterns]] of [[perception]], [[social]] [[organization]], and [[human]] [[interaction]] — not the specific [[messages]] it [[carries]]. Each new [[medium]] introduces a [[new scale]] of experience that [[transforms]] the [[environment]] and [[human]] [[sensory]] [[balance]]."},
+{q:"How do McLuhan and Logan distinguish the phonetic alphabet from ideographic writing, and what cognitive and cultural consequences do they attribute specifically to the Greek phonetic alphabet?",full:"The key [[distinction]] is that the [[alphabet]] [[visually]] represents [[speech]] ([[phonemes]]), while [[ideograms]] and [[pictograms]] represent the [[idea]] of a [[word]] — making ideographic [[writing]] effectively [[another]] [[language]]. McLuhan and Logan argue that the [[particular]] [[form]] a [[writing]] [[system]] assumes [[shapes]] the [[thought]] of its [[users]]. The [[Greek]] [[phonetic]] [[alphabet]] — which uniquely added [[vowels]] to the Semitic [[consonantal]] system — became the most [[sophisticated]] [[writing machine]] ever developed, [[separating]] the [[visual]] [[faculty]] from other [[senses]]. Its consequences include: [[abstraction]] (breaking speech into [[semantically]] [[meaningless]] [[phonemes]] and [[letters]]); [[atomicity]] (matter divides into [[irreducible]] [[elements]]); the invention of '[[nature]]' ([[physis]]) as that which can be [[observed]]; [[separation]] of the [[knower]] from the [[object]]; a [[dichotomy]] between [[subjective]] (art) and [[objective]] (science) thinking; [[separation]] of [[individual]] from [[society]]; and dominance of [[left]] [[hemispheric]] [[brain]] functions — [[logical]], [[analytic]], [[mathematical]], and [[verbal]] activities."},
+{q:"Trace the historical development of writing from ideographic systems through consonantal systems to the Greek phonetic alphabet, identifying key peoples, features, and approximate dates.",full:"The earliest [[writing]] was [[ideographic]] — [[visual]] signs representing the [[idea]] of a [[word]], as in [[Sumerian]] and [[Egyptian]] systems (ca. [[3500]]–[[3000]] B.C.). These evolved into [[syllabic]] systems, where signs represent the [[sounds]] of [[syllables]]. The [[Egyptian]] system was [[mixed]]: [[hieroglyphs]], [[ideograms]], [[syllabic]] signs, and 22 [[uniconsonantal]] signs that could have formed an [[alphabet]] but were used in a [[limited]] way. The [[Seirites]] of [[Sinai]] adopted the Egyptian [[consonantal]] signs, followed by [[Phoenicians]] and [[Hebrews]] — but lacking [[vowels]], this system fell short of the phonetic [[alphabet]]. It spread to the Indian [[subcontinent]] ([[Brahmi]], [[Pali]], [[Sanskrit]]). The [[Greeks]] then [[borrowed]] the [[Semitic]] [[alphabet]] from the [[Phoenicians]] and added [[vowels]], creating a truly [[phonetic]] [[alphabet]] (ca. [[700]] B.C.) that became the basis of all modern [[Western]] [[alphabets]]. McLuhan and Logan insist: the [[alphabet]] was [[invented]] [[once]], and [[only]] [[once]]."},
+{q:"According to McLuhan and Logan, how does print intensify the effects of the alphabet, and what reversal do electric media produce in human thought and social organization?",full:"[[Print]] [[intensified]] the [[effects]] of the [[alphabet]]. The very activity of [[type-setting]] became a [[paradigm]] of [[sequential]] and [[segmented]] [[organization]], fostering the habit of [[precise]] [[measurement]] necessary for the development of [[analytic]], [[experimental]] [[technique]] — i.e., the modern [[scientific]] [[method]]. While the [[alphabet]] and [[print]] promoted [[left]] [[hemispheric]] [[brain]] [[dominance]] — [[linear]], [[analytic]], [[mathematical]], [[verbal]], and [[individual]] thought — [[electric]] [[media]] produced the opposite: [[re-tribalization]] and a [[return]] to [[orality]]. [[Electricity]] moves at the [[speed]] of [[light]], creating a [[simultaneous]], [[non-lineal]], [[acoustic]] [[environment]] of [[interface]] and [[resonance]] rather than [[connection]]. The [[right]] side of the [[brain]], specialized for [[figure-ground]] [[pattern]] [[recognition]] and [[simultaneous]] [[information]] processing, is better suited to [[electric]] media — reversing centuries of [[alphabetic]] and [[literate]] [[culture]]."}
+];
+const SK='wmh_cloze',N=QS.length,BC=10;
+let sc=JSON.parse(localStorage.getItem(SK+'_sc')||JSON.stringify(new Array(N).fill(0)));
+let fr=parseInt(localStorage.getItem(SK+'_rounds')||'0');
+if(sc.length<N)sc=[...sc,...new Array(N-sc.length).fill(0)];
+let cur=0,streak=0,best=0,perfs=0;
+let done=new Set(),hints=new Set(),errs=new Set();
+function save(){localStorage.setItem(SK+'_sc',JSON.stringify(sc));localStorage.setItem(SK+'_rounds',String(fr));}
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function parse(full){const p=[],re=/\[\[(.+?)\]\]/g;let l=0,m;while((m=re.exec(full))!==null){if(m.index>l)p.push({t:'text',c:full.slice(l,m.index)});p.push({t:'key',w:m[1]});l=re.lastIndex;}if(l<full.length)p.push({t:'text',c:full.slice(l)});return p;}
+function loadQ(i){
+  cur=i;const q=QS[i],parts=parse(q.full),keys=parts.filter(p=>p.t==='key');
+  const n=Math.min(BC,keys.length),bl=new Set(shuffle(keys.map(p=>p.w)).slice(0,n));
+  document.getElementById('q-num').textContent='Q'+(cur+1);
+  document.getElementById('q-info').textContent=n+' blanks';
+  document.getElementById('q-solve').textContent=(sc[cur]||0)===0?'0 clears':'✓ '+sc[cur]+'x';
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('next-row').style.display='none';clearFb();
+  const at=document.getElementById('a-text');at.innerHTML='';const wc={};
+  parts.forEach(p=>{
+    if(p.t==='text'){at.appendChild(document.createTextNode(p.c));}
+    else{wc[p.w]=(wc[p.w]||0)+1;
+      if(bl.has(p.w)&&wc[p.w]===1){
+        const wrap=document.createElement('span');wrap.className='bw';
+        const inp=document.createElement('input');inp.className='bw-inp';
+        inp.dataset.word=p.w;inp.style.width=Math.max(64,p.w.length*10+16)+'px';
+        inp.placeholder='?';inp.autocomplete='off';inp.autocorrect='off';inp.autocapitalize='none';inp.spellcheck=false;
+        inp.addEventListener('input',()=>onInp(inp));
+        inp.addEventListener('keydown',e=>{if(e.key==='Enter'){const v=inp.value.trim().toLowerCase(),c=inp.dataset.word.toLowerCase();if(v!==''&&v!==c){inp.classList.add('bad');errs.add(cur);buildGrid();setTimeout(()=>inp.classList.remove('bad'),320);}}});
+        wrap.appendChild(inp);at.appendChild(wrap);
+      }else{at.appendChild(document.createTextNode(p.w));}
+    }
+  });
+  buildGrid();updateStats();setTimeout(()=>{const f=at.querySelector('.bw-inp');if(f)f.focus();},80);
+}
+function onInp(inp){if(inp.value.trim().toLowerCase()===inp.dataset.word.toLowerCase()){inp.classList.add('ok');inp.readOnly=true;const all=[...document.querySelectorAll('.bw-inp:not([readonly])')];if(all.length>0)all[0].focus();else onComplete();}}
+function onComplete(){sc[cur]=(sc[cur]||0)+1;if(!hints.has(cur))perfs++;done.add(cur);errs.delete(cur);streak++;if(streak>best)best=streak;document.getElementById('q-solve').textContent='✓ '+sc[cur]+'x';showFb('ok','All blanks correct! 🌿');document.getElementById('next-row').style.display='';save();buildGrid();updateStats();if(done.size===N)setTimeout(onAllDone,900);}
+function onAllDone(){fr++;save();document.getElementById('quiz-area').style.display='none';document.getElementById('finish').classList.add('show');const pct=Math.round((perfs/N)*100);document.getElementById('f-p').textContent=perfs;document.getElementById('f-h').textContent=hints.size;document.getElementById('f-rounds').textContent=fr;document.getElementById('f-pct').textContent=pct+'%';document.getElementById('f-sub').textContent=pct>=90?'Outstanding! 🌿':pct>=70?"Good work! Keep drilling.":"Keep going — you've got this.";}
+document.getElementById('show-ans-btn').addEventListener('click',()=>{hints.add(cur);streak=0;document.querySelectorAll('.bw-inp').forEach(inp=>{if(!inp.readOnly){inp.value=inp.dataset.word;inp.classList.add('shown');inp.readOnly=true;}});showFb('info','Answers shown. Reset for new blanks.');document.getElementById('next-row').style.display='';buildGrid();updateStats();});
+document.getElementById('reset-btn').addEventListener('click',()=>loadQ(cur));
+document.getElementById('next-btn').addEventListener('click',()=>{if(cur<N-1)loadQ(cur+1);else onAllDone();});
+document.getElementById('restart-btn').addEventListener('click',()=>{perfs=0;streak=0;done=new Set();hints=new Set();errs=new Set();document.getElementById('quiz-area').style.display='';document.getElementById('finish').classList.remove('show');loadQ(0);updateStats();});
+function showFb(t,m){const el=document.getElementById('fb');el.className='fb show '+t;el.textContent=m;}
+function clearFb(){const el=document.getElementById('fb');el.className='fb';el.textContent='';}
+function buildGrid(){const g=document.getElementById('q-grid');g.innerHTML='';for(let i=0;i<N;i++){const b=document.createElement('button');b.className='qb'+(i===cur?' cur':'')+(done.has(i)?' done':'')+(hints.has(i)&&!done.has(i)?' hint':'')+(errs.has(i)&&!done.has(i)&&!hints.has(i)?' err':'');b.textContent=i+1;b.addEventListener('click',()=>loadQ(i));g.appendChild(b);}}
+function updateStats(){document.getElementById('s-done').textContent=done.size;document.getElementById('s-perf').textContent=perfs;document.getElementById('s-hint').textContent=hints.size;document.getElementById('s-best').textContent=best;document.getElementById('streak').textContent=streak;const pct=Math.round((done.size/N)*100);document.getElementById('prog-fill').style.width=pct+'%';document.getElementById('prog-txt').textContent=done.size+' / '+N;}
+document.getElementById('log-btn').addEventListener('click',()=>{document.getElementById('log-rounds').textContent=fr;const g=document.getElementById('log-grid');g.innerHTML='';for(let i=0;i<N;i++){const c=sc[i]||0;const cell=document.createElement('div');cell.className='log-cell'+(c>0?' has-data':'');cell.innerHTML='<span class="log-cell-num">Q'+(i+1)+'</span><span class="log-cell-count">'+c+'</span><span class="log-cell-label">clears</span>';g.appendChild(cell);}document.getElementById('log-overlay').classList.add('open');});
+document.getElementById('log-close-btn').addEventListener('click',()=>document.getElementById('log-overlay').classList.remove('open'));
+document.getElementById('log-overlay').addEventListener('click',e=>{if(e.target===document.getElementById('log-overlay'))document.getElementById('log-overlay').classList.remove('open');});
+loadQ(0);
+</script>
+</body>
+</html>
