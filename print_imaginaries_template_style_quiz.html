@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Print Imaginaries — Focused Quiz</title>
+<style>
+  /* Memory-friendly palette: warm cream + sage + muted teal.
+     Same study format as the template: gentle contrast, no glare,
+     and calm feedback colors for long repetition rounds. */
+  :root {
+    --bg:        #F5EFE0;
+    --bg-soft:   #EDE4D0;
+    --card:      #FBF7EC;
+    --ink:       #2E3A3A;
+    --muted:     #6B7775;
+    --accent:    #5B8A8A;
+    --accent-d:  #406A6A;
+    --good:      #7BA77B;
+    --good-bg:   #DFEBDC;
+    --bad:       #B8746B;
+    --bad-bg:    #EFD9D3;
+    --hi:        #E8C97A;
+    --line:      #d8cfba;
+    --shadow:    0 2px 0 rgba(46,58,58,0.08), 0 6px 18px rgba(46,58,58,0.06);
+    --radius:    14px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 24px 14px 60px;
+  }
+  .wrap { width: 100%; max-width: 760px; }
+  header { text-align: center; margin-bottom: 18px; }
+  header h1 {
+    font-size: 1.45rem; margin: 0 0 4px;
+    color: var(--accent-d); letter-spacing: 0.3px;
+  }
+  header p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+  .bar {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    justify-content: space-between; align-items: center;
+    background: var(--bg-soft); padding: 9px 13px;
+    border-radius: var(--radius); font-size: 0.88rem;
+    color: var(--muted); margin-bottom: 12px;
+  }
+  .bar strong { color: var(--ink); font-weight: 600; }
+  .bar .pill {
+    background: var(--card); padding: 3px 10px;
+    border-radius: 999px; border: 1px solid var(--line);
+  }
+  .progress-track {
+    width: 100%; height: 6px; background: var(--bg-soft);
+    border-radius: 999px; overflow: hidden; margin-bottom: 12px;
+  }
+  .progress-fill {
+    height: 100%; background: var(--accent);
+    width: 0%; transition: width .3s ease;
+  }
+  .question-map {
+    display: flex; flex-wrap: wrap; gap: 7px;
+    margin: 0 0 14px;
+    background: var(--bg-soft);
+    border-radius: var(--radius);
+    padding: 10px;
+  }
+  .map-btn {
+    min-width: 36px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--accent-d);
+    border-radius: 999px;
+    padding: 6px 9px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  .map-btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .map-btn.current { background: var(--accent); color: #FBF7EC; border-color: var(--accent); }
+  .map-btn.done { background: var(--good-bg); border-color: var(--good); color: #2f4a2f; }
+  .map-btn.wrong { background: var(--bad-bg); border-color: var(--bad); color: #5a2c26; }
+  .map-btn.revealed { background: #F5E4B7; border-color: var(--hi); color: #6B4F1A; }
+  .card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 24px 22px 20px; box-shadow: var(--shadow);
+  }
+  .qnum {
+    font-size: 0.75rem; letter-spacing: 1.2px;
+    color: var(--accent); text-transform: uppercase;
+    margin-bottom: 6px; font-weight: 600;
+  }
+  .qtype-tag {
+    display: inline-block; margin-left: 8px;
+    padding: 2px 8px; border-radius: 999px;
+    background: var(--hi); color: #6b4f1a;
+    font-size: 0.68rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .qtext { font-size: 1.08rem; margin: 4px 0 16px; color: var(--ink); }
+  .qtext code, .feedback code, .review-item code {
+    background: var(--hi); padding: 1px 6px; border-radius: 4px;
+    font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 0.92em;
+  }
+  .source-line { color: var(--muted); font-size: .82rem; margin: -8px 0 14px; }
+  .options { display: grid; gap: 9px; }
+  .opt {
+    text-align: left; background: #FFFDF6;
+    border: 1.5px solid var(--line); color: var(--ink);
+    padding: 11px 13px; border-radius: 10px;
+    font-size: 0.96rem; cursor: pointer;
+    transition: all .15s ease; font-family: inherit;
+    line-height: 1.45; width: 100%;
+  }
+  .opt:hover:not(:disabled) {
+    border-color: var(--accent); background: #FFFEFA;
+    transform: translateY(-1px);
+  }
+  .opt:disabled { cursor: default; }
+  .opt.correct, .opt.reveal {
+    background: var(--good-bg); border-color: var(--good); color: #2f4a2f;
+  }
+  .opt.wrong {
+    background: var(--bad-bg); border-color: var(--bad); color: #5a2c26;
+  }
+  .opt .marker {
+    display: inline-block; width: 22px; height: 22px; line-height: 22px;
+    border-radius: 50%; background: var(--bg-soft); color: var(--muted);
+    text-align: center; font-size: 0.78rem; margin-right: 10px; font-weight: 700;
+  }
+  .opt.correct .marker, .opt.reveal .marker { background: var(--good); color: white; }
+  .opt.wrong .marker { background: var(--bad); color: white; }
+  .dd-hint {
+    font-size: 0.85rem; color: var(--accent-d);
+    margin-bottom: 14px; padding: 8px 12px;
+    background: rgba(91, 138, 138, 0.08);
+    border-radius: 8px; border-left: 3px solid var(--accent);
+  }
+  .dd-card {
+    background: var(--card);
+    border: 1.5px solid var(--accent);
+    color: var(--accent-d);
+    padding: 7px 12px; border-radius: 8px;
+    font-size: 0.9rem; cursor: pointer;
+    font-weight: 500; user-select: none;
+    transition: all 0.15s ease; font-family: inherit;
+    line-height: 1.4; text-align: left;
+  }
+  .dd-card:hover:not(:disabled) { background: #fff; }
+  .dd-card.selected {
+    background: var(--accent); color: white;
+    transform: scale(1.04);
+    box-shadow: 0 0 0 3px rgba(91, 138, 138, 0.25);
+  }
+  .dd-card.correct { background: var(--good-bg); border-color: var(--good); color: #2f4a2f; cursor: default; }
+  .dd-card.wrong { background: var(--bad-bg); border-color: var(--bad); color: #5a2c26; cursor: default; }
+  .dd-card[disabled] { cursor: default; }
+  .slot-target {
+    border: 2px dashed var(--line); border-radius: 8px;
+    background: var(--bg-soft); padding: 5px;
+    min-height: 44px; display: flex; align-items: center;
+    justify-content: center; cursor: pointer;
+    transition: border-color .15s ease;
+  }
+  .slot-target:hover { border-color: var(--accent); }
+  .slot-target.has-card { border-style: solid; background: #fbf3df; padding: 4px; }
+  .slot-target.correct { border-color: var(--good); background: var(--good-bg); border-style: solid; }
+  .slot-target.wrong { border-color: var(--bad); background: var(--bad-bg); border-style: solid; }
+  .slot-target .placeholder { color: var(--muted); font-size: 0.82rem; }
+  .slot-target .dd-card { width: 100%; }
+  .match-list { display: flex; flex-direction: column; gap: 8px; }
+  .match-row { display: flex; align-items: center; gap: 10px; }
+  .match-label { flex: 1; font-size: 0.9rem; color: var(--ink); }
+  .match-row .slot-target { width: 240px; flex: none; }
+  .slot-hint { font-size: 0.75rem; color: var(--good); margin-top: 3px; font-style: italic; }
+  @media (max-width: 520px) {
+    .match-row { flex-direction: column; align-items: stretch; gap: 4px; }
+    .match-row .slot-target { width: 100%; }
+  }
+  .order-list { display: flex; flex-direction: column; gap: 8px; }
+  .order-row { display: flex; align-items: stretch; gap: 10px; }
+  .order-num {
+    width: 34px; min-height: 44px;
+    border-radius: 8px; background: var(--accent);
+    color: white; display: flex; align-items: center;
+    justify-content: center; font-weight: 700; flex-shrink: 0;
+    font-size: 1rem;
+  }
+  .order-row .slot-target { flex: 1; }
+  .card-bank {
+    margin-top: 14px; padding: 11px 12px;
+    background: var(--bg-soft); border-radius: 10px;
+    border: 1px solid var(--line);
+  }
+  .card-bank-label {
+    font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 8px; font-weight: 600;
+  }
+  .card-bank-cards { display: flex; flex-wrap: wrap; gap: 6px; min-height: 30px; }
+  .card-bank-cards .empty-hint { color: var(--good); font-size: 0.85rem; font-style: italic; }
+  .fillbox { display:grid; gap: 9px; }
+  .fill-row {
+    display:block; background:#FFFDF6; border:1.5px solid var(--line);
+    border-radius: 10px; padding: 11px 13px; font-size:.96rem; line-height:1.55;
+  }
+  .fill-row input {
+    min-width: 130px; max-width: min(240px, 100%); padding: 7px 10px; margin: 3px 5px;
+    border-radius: 8px; border: 1.5px solid var(--line); background: white; color: var(--ink);
+    font: inherit; font-weight: 700;
+  }
+  .fill-row input.correct { background: var(--good-bg); border-color: var(--good); color: #2f4a2f; }
+  .fill-row input.wrong { background: var(--bad-bg); border-color: var(--bad); color: #5a2c26; }
+  .feedback {
+    margin-top: 14px; padding: 11px 13px;
+    border-radius: 10px; font-size: 0.92rem;
+    display: none; line-height: 1.5;
+  }
+  .feedback.good { background: var(--good-bg); color: #2f4a2f; display: block; }
+  .feedback.bad  { background: var(--bad-bg); color: #5a2c26; display: block; }
+  .feedback.info { background: var(--bg-soft); color: var(--ink); display: block; }
+  .feedback b { font-weight: 700; }
+  .actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  button.btn {
+    background: var(--accent); color: #FBF7EC;
+    border: none; padding: 11px 18px; border-radius: 10px;
+    font-size: 0.96rem; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: background .15s ease, transform .1s ease;
+  }
+  button.btn:hover { background: var(--accent-d); }
+  button.btn:active { transform: translateY(1px); }
+  button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  button.btn.ghost { background: transparent; color: var(--accent-d); border: 1.5px solid var(--accent); }
+  button.btn.ghost:hover { background: var(--bg-soft); }
+  .actions .spacer { flex: 1 1 auto; }
+  .result { text-align: center; padding: 12px 6px 6px; }
+  .result h2 { margin: 0 0 6px; color: var(--accent-d); font-size: 1.5rem; }
+  .score-big { font-size: 2.6rem; font-weight: 700; color: var(--ink); margin: 12px 0 4px; }
+  .score-pct { color: var(--muted); font-size: 1rem; }
+  .badge { display: inline-block; margin: 12px auto 4px; padding: 6px 14px; border-radius: 999px; font-size: 0.88rem; font-weight: 600; }
+  .badge.gold { background:#F5E4B7; color:#6B4F1A; }
+  .badge.silver { background:#E5E2D9; color:#4A4A4A; }
+  .badge.bronze { background:#EBD7C4; color:#6B3F1A; }
+  .badge.try { background:var(--bg-soft); color:var(--muted); }
+  .review-list { text-align:left; margin:16px 0 6px; max-height:260px; overflow-y:auto; border-top:1px dashed var(--line); padding-top:12px; }
+  .review-list h3 { margin:0 0 10px; font-size:.9rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+  .review-item { background: var(--bg-soft); border-left: 3px solid var(--bad); padding:9px 11px; border-radius:8px; margin-bottom:7px; font-size:.88rem; }
+  .review-item .qq { font-weight: 600; margin-bottom: 3px; }
+  .review-item .info { color: var(--muted); font-size: .82rem; }
+  footer { text-align:center; color: var(--muted); font-size:.78rem; margin-top:20px; }
+  @media (max-width: 480px) {
+    .qtext { font-size: 1rem; }
+    header h1 { font-size: 1.25rem; }
+    .score-big { font-size: 2.2rem; }
+    .card { padding: 20px 16px 18px; }
+    .actions { gap: 8px; }
+    button.btn { padding: 10px 13px; font-size: 0.9rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Print Imaginaries</h1>
+    <p>15 focused questions · jump map · reveal/reset · replay to lock in 🌿</p>
+  </header>
+  <div class="bar">
+    <span>Round <strong id="round">1</strong></span>
+    <span class="pill">Q <strong id="qIdx">1</strong> / <strong id="qTotal">15</strong></span>
+    <span>Score <strong id="score">0</strong></span>
+    <span>Best <strong id="best">—</strong></span>
+    <span>Completed <strong id="completed">0</strong></span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="progress"></div></div>
+  <div class="question-map" id="qMap" aria-label="Question map"></div>
+  <div class="card" id="card"></div>
+  <footer>Print Imaginaries · McLuhan · Anderson · Print Capitalism</footer>
+</div>
+<script>
+const BANK = [
+  {
+    "id": "q01",
+    "type": "mcq",
+    "title": "Gutenberg and the press",
+    "source": "Slide 2",
+    "prompt": "Which starting point best matches the lecture's framing of Gutenberg's printing press?",
+    "options": [
+      {
+        "text": "It is placed near 1450 in Mainz, before large-scale print culture expanded.",
+        "correct": true
+      },
+      {
+        "text": "It is placed near 1600, after vernacular book markets had already peaked.",
+        "correct": false
+      },
+      {
+        "text": "It is placed near 1500, after electric media had weakened national publics.",
+        "correct": false
+      },
+      {
+        "text": "It is placed near 1964, when media theory first produced movable type.",
+        "correct": false
+      }
+    ],
+    "explanation": "The lecture opens by asking when Gutenberg invented the printing press and gives approximately 1450 as the answer."
+  },
+  {
+    "id": "q02",
+    "type": "fill",
+    "title": "McLuhan's sensory shift",
+    "source": "Slides 3 and 5",
+    "prompt": "Type the missing key term in each fixed blank. Each sentence has exactly one blank.",
+    "sentences": [
+      {
+        "before": "McLuhan links print with a shift from auditory culture toward stronger ",
+        "after": " organization.",
+        "answers": [
+          "visual"
+        ]
+      },
+      {
+        "before": "The printed book intensifies ",
+        "after": " by making perception more ordered and spatial.",
+        "answers": [
+          "perspective"
+        ]
+      },
+      {
+        "before": "Print also strengthens a fixed private ",
+        "after": " from which the reader sees the world.",
+        "answers": [
+          "point of view",
+          "viewpoint"
+        ]
+      }
+    ],
+    "explanation": "The slides frame print as intensifying visual stress, perspective, and a fixed point of view."
+  },
+  {
+    "id": "q03",
+    "type": "matching",
+    "title": "McLuhan: terms and meanings",
+    "source": "Slides 4-7",
+    "prompt": "Match each concept to the most accurate meaning.",
+    "pairs": [
+      {
+        "left": "Movable type",
+        "right": "A repeatable system that mechanized a complicated manual craft."
+      },
+      {
+        "left": "Typography",
+        "right": "A print extension that reorganized psychic and social boundaries."
+      },
+      {
+        "left": "Fixed point of view",
+        "right": "A visual habit strengthened by the form of the printed book."
+      },
+      {
+        "left": "Global village",
+        "right": "A retribal condition connected to electric media and instant speed."
+      }
+    ],
+    "explanation": "Movable type mechanizes craft; typography reorganizes culture; print intensifies visual viewpoint; electric media produce the global village."
+  },
+  {
+    "id": "q04",
+    "type": "sequence",
+    "title": "From print technology to national identity",
+    "source": "Slides 4-6",
+    "prompt": "Place the cards in the order that best reconstructs McLuhan's logic.",
+    "items": [
+      "Movable type makes textual production more mechanical and uniform.",
+      "Printed information can be stored, repeated, and standardized.",
+      "Literacy, administration, education, and markets expand in scale.",
+      "Collective identity can move beyond tribe or empire toward nationalism."
+    ],
+    "explanation": "The lecture moves from technical uniformity to broader social scaling and then to nationalism."
+  },
+  {
+    "id": "q05",
+    "type": "mcq",
+    "title": "Print's social consequences",
+    "source": "Slides 5-6",
+    "prompt": "Which cluster best represents the social effects assigned to print in the lecture?",
+    "options": [
+      {
+        "text": "Nationalism, industrialism, mass markets, education, and wider literacy.",
+        "correct": true
+      },
+      {
+        "text": "Tribal intimacy, oral memory, guild secrecy, and local ritual authority.",
+        "correct": false
+      },
+      {
+        "text": "Instant speed, global listening, electronic concern, and retribal emotion.",
+        "correct": false
+      },
+      {
+        "text": "Latin exclusivity, manuscript scarcity, elite lore, and limited circulation.",
+        "correct": false
+      }
+    ],
+    "explanation": "The print slide links typographic extension to nationalism, industrialism, mass markets, literacy, and education."
+  },
+  {
+    "id": "q06",
+    "type": "mcq",
+    "title": "Print versus electric media",
+    "source": "Slides 6-7",
+    "prompt": "How does the lecture contrast print media with electric mass media?",
+    "options": [
+      {
+        "text": "Print supports national scale, while electric media pull people toward global tribal connection.",
+        "correct": true
+      },
+      {
+        "text": "Print creates global tribalism, while electric media restore isolated local dialect communities.",
+        "correct": false
+      },
+      {
+        "text": "Print weakens literacy, while electric media make vernacular reading publics more stable.",
+        "correct": false
+      },
+      {
+        "text": "Print blocks administration, while electric media make bureaucratic centralization inevitable.",
+        "correct": false
+      }
+    ],
+    "explanation": "Print is associated with national scale; electric media are described as working against nationalism by making humanity tribal again."
+  },
+  {
+    "id": "q07",
+    "type": "matching",
+    "title": "Print makes nationalism thinkable",
+    "source": "Slides 6, 9 and 12",
+    "prompt": "Match each print-related mechanism with its nationalist effect.",
+    "pairs": [
+      {
+        "left": "Standardized vernaculars",
+        "right": "People divided in speech can still share a written language."
+      },
+      {
+        "left": "Mass literacy",
+        "right": "Large groups can encounter similar texts through education."
+      },
+      {
+        "left": "Print markets",
+        "right": "Publishers look for wider readerships beyond thin elite groups."
+      },
+      {
+        "left": "Stored repetition",
+        "right": "Information can circulate repeatedly beyond one local moment."
+      }
+    ],
+    "explanation": "These mechanisms connect print to shared languages, broad reading publics, market scaling, and repeatable dissemination."
+  },
+  {
+    "id": "q08",
+    "type": "mcq",
+    "title": "Anderson's addition",
+    "source": "Slides 8-10",
+    "prompt": "What does Anderson add most clearly to McLuhan's account of print and nationalism?",
+    "options": [
+      {
+        "text": "He emphasizes capitalism and print markets as conditions shaping national consciousness.",
+        "correct": true
+      },
+      {
+        "text": "He replaces language with electricity as the source of modern national consciousness.",
+        "correct": false
+      },
+      {
+        "text": "He argues nations were complete before markets, books, or linguistic diversity mattered.",
+        "correct": false
+      },
+      {
+        "text": "He treats manuscript scarcity as the main path toward modern mass identity.",
+        "correct": false
+      }
+    ],
+    "explanation": "The slides frame Anderson's addition as print capitalism: the economic conditions of publishing help explain nationalism."
+  },
+  {
+    "id": "q09",
+    "type": "sequence",
+    "title": "Anderson's market sequence",
+    "source": "Slides 11-12",
+    "prompt": "Arrange the market sequence that explains the move from Latin to vernacular print publics.",
+    "items": [
+      "Book publishing appears as an early capitalist enterprise.",
+      "The first major market is a wide but thin layer of Latin readers.",
+      "The elite Latin-reading market becomes saturated over time.",
+      "Printers turn toward much larger monoglot vernacular readerships."
+    ],
+    "explanation": "Anderson describes book publishing's restless search for markets: after the Latin market saturates, vernacular mass publics become attractive."
+  },
+  {
+    "id": "q10",
+    "type": "fill",
+    "title": "Anderson's core formula",
+    "source": "Slide 9",
+    "prompt": "Type the missing key term in each fixed blank. Each sentence has exactly one blank.",
+    "sentences": [
+      {
+        "before": "Anderson's account depends on a system of production called ",
+        "after": ".",
+        "answers": [
+          "capitalism"
+        ]
+      },
+      {
+        "before": "The communication technology that carries the new publics is ",
+        "after": ".",
+        "answers": [
+          "print"
+        ]
+      },
+      {
+        "before": "The human condition that makes language-specific markets matter is linguistic ",
+        "after": ".",
+        "answers": [
+          "diversity"
+        ]
+      },
+      {
+        "before": "Capitalism and print create monoglot mass reading ",
+        "after": ".",
+        "answers": [
+          "publics"
+        ]
+      }
+    ],
+    "explanation": "The key interaction is capitalism, print, and linguistic diversity, producing monoglot mass reading publics."
+  },
+  {
+    "id": "q11",
+    "type": "matching",
+    "title": "Anderson: core concepts",
+    "source": "Slides 9 and 12",
+    "prompt": "Match each Andersonian term to its best explanation.",
+    "pairs": [
+      {
+        "left": "Print capitalism",
+        "right": "The meeting of publishing technology and market-seeking enterprise."
+      },
+      {
+        "left": "Monoglot mass publics",
+        "right": "Large readerships organized around one shared written language."
+      },
+      {
+        "left": "Imagined community",
+        "right": "A collective whose members belong without knowing most others."
+      },
+      {
+        "left": "Linguistic diversity",
+        "right": "The human condition that makes language-specific publics important."
+      }
+    ],
+    "explanation": "These concepts sit at the center of Anderson's account: capitalism, print, language diversity, mass readerships, and imagined membership."
+  },
+  {
+    "id": "q12",
+    "type": "mcq",
+    "title": "Manuscript knowledge versus print knowledge",
+    "source": "Slide 11",
+    "prompt": "Which contrast best captures why Anderson treats print as historically powerful?",
+    "options": [
+      {
+        "text": "Manuscripts remain scarce, while print gains force through reproduction and dissemination.",
+        "correct": true
+      },
+      {
+        "text": "Manuscripts create mass education, while print mainly preserves private elite knowledge.",
+        "correct": false
+      },
+      {
+        "text": "Manuscripts open vernacular markets, while print keeps readers tied to Latin alone.",
+        "correct": false
+      },
+      {
+        "text": "Manuscripts invent nationalism, while print cancels shared reading publics completely.",
+        "correct": false
+      }
+    ],
+    "explanation": "The slide contrasts scarce manuscript knowledge with printed knowledge that lives by reproducibility and dissemination."
+  },
+  {
+    "id": "q13",
+    "type": "sequence",
+    "title": "Mini timeline of print imaginaries",
+    "source": "Slides 2, 7, 9 and 11-12",
+    "prompt": "Put these events or arguments into the best historical-conceptual order.",
+    "items": [
+      "Gutenberg's press is placed around the mid-fifteenth century.",
+      "Mass reproduction makes printed knowledge increasingly widespread.",
+      "Vernacular print markets help form monoglot reading publics.",
+      "Electric media later challenge the press-based image of nationalism."
+    ],
+    "explanation": "This order moves from the press to mass reproduction, then vernacular publics, then McLuhan's later contrast with electric media."
+  },
+  {
+    "id": "q14",
+    "type": "fill",
+    "title": "Think like an examiner",
+    "source": "Slides 4-12",
+    "prompt": "Type the missing theorist or concept. Each sentence has exactly one fixed blank.",
+    "sentences": [
+      {
+        "before": "For ",
+        "after": ", media form changes perception, social scale, and cultural organization.",
+        "answers": [
+          "McLuhan",
+          "Marshall McLuhan"
+        ]
+      },
+      {
+        "before": "For ",
+        "after": ", markets, print, and language diversity make national publics imaginable.",
+        "answers": [
+          "Anderson",
+          "Benedict Anderson"
+        ]
+      },
+      {
+        "before": "Electric media pressure nationalism by creating the condition McLuhan calls the global ",
+        "after": ".",
+        "answers": [
+          "village"
+        ]
+      }
+    ],
+    "explanation": "The exam contrast is McLuhan's media-form theory versus Anderson's print-capitalism explanation, with electric media linked to the global village."
+  },
+  {
+    "id": "q15",
+    "type": "mcq",
+    "title": "Full synthesis",
+    "source": "Slides 4-12",
+    "prompt": "Which synthesis best captures the whole slide deck?",
+    "options": [
+      {
+        "text": "Print reorganizes perception, language, markets, and belonging into national imagination.",
+        "correct": true
+      },
+      {
+        "text": "Print only copies manuscripts faster without altering identity, markets, or perception.",
+        "correct": false
+      },
+      {
+        "text": "Nationalism mainly comes from electric media replacing books with instant exchange.",
+        "correct": false
+      },
+      {
+        "text": "Language differences prevent print from creating publics or imagined membership.",
+        "correct": false
+      }
+    ],
+    "explanation": "The deck links print to perception, standardization, mass literacy, market expansion, monoglot publics, and imagined national communities."
+  }
+];
+const STORAGE_PREFIX = 'print_imaginaries_template_style_v1_';
+const elCard = document.getElementById('card');
+const elQIdx = document.getElementById('qIdx');
+const elQTotal = document.getElementById('qTotal');
+const elScore = document.getElementById('score');
+const elRound = document.getElementById('round');
+const elBest = document.getElementById('best');
+const elCompleted = document.getElementById('completed');
+const elProg = document.getElementById('progress');
+const elQMap = document.getElementById('qMap');
+let order = [], pos = 0, score = 0, round = 1, states = {}, wrongLog = [], resultCounted = false;
+function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function escapeHTML(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function stripHTML(s) { return String(s).replace(/<[^>]+>/g, ''); }
+function norm(s) { return String(s || '').toLowerCase().replace(/[.,;:!?()[\]{}"']/g, '').replace(/\s+/g, ' ').trim(); }
+const memStore = {};
+function lsGet(k) { try { return localStorage.getItem(k); } catch(e) { return memStore[k] || null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch(e) { memStore[k] = v; } }
+function lsDel(k) { try { localStorage.removeItem(k); } catch(e) {} delete memStore[k]; }
+function itemId(item) { return item.id || item.title; }
+function startRound() {
+  order = shuffle(BANK.map((_, i) => i)); pos = 0; score = 0; states = {}; wrongLog = []; resultCounted = false;
+  round = parseInt(lsGet(STORAGE_PREFIX + 'round') || '1', 10);
+  elQTotal.textContent = BANK.length; elScore.textContent = '0'; elRound.textContent = round;
+  elBest.textContent = lsGet(STORAGE_PREFIX + 'best') || '—'; elCompleted.textContent = lsGet(STORAGE_PREFIX + 'completed') || '0';
+  renderQuestion();
+}
+function getState(item) {
+  const id = itemId(item);
+  if (!states[id]) {
+    const st = { answered:false, revealed:false, correct:false, scoreCounted:false, wrongLogged:false, selectedChoiceOrig:null, selectedCard:null, placements:{} };
+    if (isDD(item)) st.dd = setupDD(item);
+    if (item.type === 'mcq') st.shownChoices = shuffle(item.options.map((_, i) => i));
+    states[id] = st;
+  }
+  return states[id];
+}
+function isDD(item) { return item.type === 'matching' || item.type === 'sequence'; }
+function renderQuestionMap() {
+  elQMap.innerHTML = '';
+  order.forEach((qi, i) => {
+    const item = BANK[qi], st = states[itemId(item)];
+    const b = document.createElement('button');
+    let cls = 'map-btn' + (i === pos ? ' current' : '');
+    if (st?.revealed) cls += ' revealed'; else if (st?.answered) cls += st.correct ? ' done' : ' wrong';
+    b.className = cls; b.textContent = i + 1; b.onclick = () => { pos = i; renderQuestion(); }; elQMap.appendChild(b);
+  });
+}
+function updateStats() {
+  const checked = Object.values(states).filter(st => st.answered && !st.revealed);
+  score = checked.filter(st => st.correct && st.scoreCounted).length;
+  elScore.textContent = String(score); elRound.textContent = String(round); elCompleted.textContent = lsGet(STORAGE_PREFIX + 'completed') || '0';
+  const pct = Math.round((score / BANK.length) * 100); elProg.style.width = pct + '%';
+}
+function typeLabel(t) { return {mcq:'Multiple choice', matching:'Drag & match', sequence:'Drag & order', fill:'Fill blanks'}[t] || t; }
+function renderQuestion() {
+  if (pos >= order.length) return renderResult();
+  const item = BANK[order[pos]]; const st = getState(item);
+  elQIdx.textContent = pos + 1; elProg.style.width = (score / order.length * 100) + '%';
+  let html = `<div class="qnum">Question ${pos + 1} of ${order.length}<span class="qtype-tag">${typeLabel(item.type)}</span></div>`;
+  html += `<p class="qtext">${item.prompt}</p><div class="source-line">${escapeHTML(item.source || '')} · ${escapeHTML(item.title || '')}</div>`;
+  if (item.type === 'mcq') html += renderMCQ(item, st);
+  else if (item.type === 'matching' || item.type === 'sequence') html += renderDD(item, st);
+  else if (item.type === 'fill') html += renderFill(item, st);
+  html += `<div class="feedback" id="fb"></div><div class="actions" id="acts"></div>`;
+  elCard.innerHTML = html;
+  if (item.type === 'mcq') attachMCQ(item, st);
+  else if (item.type === 'matching' || item.type === 'sequence') attachDD(item, st);
+  else if (item.type === 'fill') attachFill(item, st);
+  renderFeedback(item, st); renderActions(item, st); renderQuestionMap(); updateStats();
+}
+function renderMCQ(item, st) {
+  let h = '<div class="options">';
+  st.shownChoices.forEach((orig, i) => {
+    const choice = item.options[orig]; let cls = 'opt';
+    if (st.answered || st.revealed) {
+      if (choice.correct) cls += ' reveal';
+      if (st.selectedChoiceOrig === orig && !choice.correct) cls += ' wrong';
+      if (st.selectedChoiceOrig === orig && choice.correct) cls += ' correct';
+    }
+    h += `<button class="${cls}" data-orig="${orig}" ${st.answered || st.revealed ? 'disabled' : ''}><span class="marker">${String.fromCharCode(65 + i)}</span>${escapeHTML(choice.text)}</button>`;
+  });
+  h += '</div><p class="small">Auto-checks as soon as you choose an option.</p>'; return h;
+}
+function attachMCQ(item, st) { document.querySelectorAll('.opt').forEach(btn => btn.onclick = () => selectOption(item, st, Number(btn.dataset.orig))); }
+function selectOption(item, st, orig) {
+  if (st.answered || st.revealed) return; st.selectedChoiceOrig = orig; st.answered = true; st.correct = !!item.options[orig].correct;
+  if (st.correct) markCorrect(st); else logWrongOnce(item, 'Correct: ' + item.options.find(o => o.correct).text);
+  renderQuestion();
+}
+function renderFill(item, st) {
+  if (!st.fillValues) st.fillValues = item.sentences.map(() => '');
+  let h = '<div class="fillbox"><div class="card-bank-label">Fixed blanks</div>';
+  item.sentences.forEach((s, i) => {
+    const value = st.revealed ? s.answers[0] : st.fillValues[i];
+    const ok = s.answers.some(a => norm(a) === norm(value));
+    const cls = value ? (ok ? 'correct' : 'wrong') : '';
+    h += `<label class="fill-row">${escapeHTML(s.before)}<input data-fill="${i}" value="${escapeHTML(value)}" autocomplete="off" autocapitalize="none" spellcheck="false" class="${cls}" ${st.revealed || ok ? 'disabled' : ''} />${escapeHTML(s.after)}</label>`;
+  });
+  h += '</div><p class="small">The blank positions never move. Case and punctuation do not matter.</p>'; return h;
+}
+function attachFill(item, st) { document.querySelectorAll('input[data-fill]').forEach(inp => inp.oninput = () => checkFill(item, st)); }
+function checkFill(item, st) {
+  const inputs = Array.from(document.querySelectorAll('input[data-fill]'));
+  inputs.forEach(inp => { st.fillValues[Number(inp.dataset.fill)] = inp.value; });
+  let allCorrect = true, allFilled = true;
+  item.sentences.forEach((s, i) => { const v = st.fillValues[i] || ''; if (!v.trim()) allFilled = false; const ok = s.answers.some(a => norm(a) === norm(v)); if (!ok) allCorrect = false; });
+  if (allCorrect) { st.answered = true; st.correct = true; markCorrect(st); }
+  else if (allFilled) { st.answered = true; st.correct = false; logWrongOnce(item, 'Review the red blank or blanks.'); }
+  else { st.answered = false; st.correct = false; unscoreIfNeeded(st); }
+  renderQuestion();
+}
+function setupDD(item) {
+  let cards, slots, slotOrder;
+  if (item.type === 'matching') {
+    cards = item.pairs.map((p, i) => ({ id:'c'+i, text:p.right, correctSlot:'s'+i }));
+    slots = item.pairs.map((p, i) => ({ id:'s'+i, label:p.left, multi:false })); slotOrder = shuffle(slots.map(s => s.id));
+  } else {
+    cards = item.items.map((t, i) => ({ id:'c'+i, text:t, correctSlot:'s'+i }));
+    slots = item.items.map((_, i) => ({ id:'s'+i, label:String(i+1), multi:false })); slotOrder = slots.map(s => s.id);
+  }
+  return { type:item.type === 'matching' ? 'match' : 'order', cards, slots, slotOrder, cardOrder:shuffle(cards.map(c => c.id)) };
+}
+function renderDD(item, st) {
+  const hint = item.type === 'matching' ? '🌿 Tap a card, then tap the slot next to its matching item. Tap a placed card to send it back.' : '🌿 Tap a card, then tap the numbered slot for its position. Tap a placed card to send it back.';
+  return `<div class="dd-hint">${hint}</div><div id="ddArea"></div>`;
+}
+function attachDD(item, st) { renderDDArea(item, st); }
+function renderDDArea(item, st) {
+  const dd = st.dd; const area = document.getElementById('ddArea'); const results = (st.answered || st.revealed) ? getDDResults(st) : null; let h = '';
+  if (dd.type === 'order') h += renderOrderSlots(st, results); else h += renderMatchSlots(st, results);
+  if (!st.answered && !st.revealed) {
+    const inBank = dd.cardOrder.filter(cid => !st.placements[cid]);
+    h += `<div class="card-bank"><div class="card-bank-label">Cards (${inBank.length} left)</div><div class="card-bank-cards">`;
+    if (inBank.length === 0) h += `<div class="empty-hint">All placed — ready to check!</div>`;
+    else inBank.forEach(cid => { const c = dd.cards.find(x => x.id === cid); const sel = st.selectedCard === cid ? ' selected' : ''; h += `<button class="dd-card${sel}" data-card="${cid}">${escapeHTML(c.text)}</button>`; });
+    h += '</div></div>';
+  }
+  area.innerHTML = h;
+  if (st.answered || st.revealed) return;
+  area.querySelectorAll('.dd-card').forEach(el => el.onclick = (e) => { e.stopPropagation(); onCardClick(item, st, el.dataset.card); });
+  area.querySelectorAll('[data-slot]').forEach(el => el.onclick = () => onSlotClick(item, st, el.dataset.slot));
+}
+function renderOrderSlots(st, results) { let h = '<div class="order-list">'; st.dd.slotOrder.forEach(sid => { const slot = st.dd.slots.find(s => s.id === sid); h += `<div class="order-row"><div class="order-num">${slot.label}</div>${slotHTML(st, sid, results)}</div>`; }); return h + '</div>'; }
+function renderMatchSlots(st, results) { let h = '<div class="match-list">'; st.dd.slotOrder.forEach(sid => { const slot = st.dd.slots.find(s => s.id === sid); h += `<div class="match-row"><div class="match-label">${escapeHTML(slot.label)}</div>${slotHTML(st, sid, results)}</div>`; }); return h + '</div>'; }
+function slotHTML(st, sid, results) {
+  const cardsHere = Object.keys(st.placements).filter(cid => st.placements[cid] === sid);
+  if (cardsHere.length) { const cid = cardsHere[0], c = st.dd.cards.find(x => x.id === cid); let cls='slot-target has-card', cardCls='dd-card', hint=''; if (results) { const ok=results[cid]; cls += ok?' correct':' wrong'; cardCls += ok?' correct':' wrong'; if (!ok) { const correctCard=st.dd.cards.find(x=>x.correctSlot===sid); if (correctCard) hint = `<div class="slot-hint">→ correct: ${escapeHTML(correctCard.text)}</div>`; } } return `<div style="flex:1;"><div class="${cls}" data-slot="${sid}"><button class="${cardCls}" data-card="${cid}" ${results?'disabled':''}>${escapeHTML(c.text)}</button></div>${hint}</div>`; }
+  if (results) { const correctCard = st.dd.cards.find(x => x.correctSlot === sid); const hint = correctCard ? `<div class="slot-hint">→ correct: ${escapeHTML(correctCard.text)}</div>` : ''; return `<div style="flex:1;"><div class="slot-target wrong" data-slot="${sid}"><span class="placeholder" style="color:var(--bad);">empty</span></div>${hint}</div>`; }
+  return `<div class="slot-target" data-slot="${sid}"><span class="placeholder">tap to place</span></div>`;
+}
+function onCardClick(item, st, cardId) { if (st.answered || st.revealed) return; if (st.placements[cardId]) { delete st.placements[cardId]; st.selectedCard=null; } else st.selectedCard = st.selectedCard === cardId ? null : cardId; renderQuestion(); }
+function onSlotClick(item, st, slotId) { if (st.answered || st.revealed || !st.selectedCard) return; Object.keys(st.placements).forEach(cid => { if (st.placements[cid] === slotId) delete st.placements[cid]; }); st.placements[st.selectedCard] = slotId; st.selectedCard = null; renderQuestion(); }
+function getDDResults(st) { const r={}; st.dd.cards.forEach(c => r[c.id] = st.placements[c.id] === c.correctSlot); return r; }
+function allDDPlaced(st) { return st.dd.cards.every(c => st.placements[c.id]); }
+function checkDD(item, st) { if (st.answered || st.revealed || !allDDPlaced(st)) return; const results = getDDResults(st); const correctCount = Object.values(results).filter(Boolean).length; const total = st.dd.cards.length; st.answered = true; st.correct = correctCount === total; if (st.correct) markCorrect(st); else logWrongOnce(item, `${correctCount}/${total} placements correct`); renderQuestion(); }
+function markCorrect(st) { if (!st.scoreCounted) { st.scoreCounted = true; } }
+function unscoreIfNeeded(st) { if (st.scoreCounted) st.scoreCounted = false; }
+function logWrongOnce(item, info) { const st = getState(item); if (!st.wrongLogged) { wrongLog.push({ q: stripHTML(item.prompt), info }); st.wrongLogged = true; } }
+function revealAnswer(item, st) {
+  unscoreIfNeeded(st); st.answered = true; st.revealed = true; st.correct = false;
+  if (item.type === 'mcq') st.selectedChoiceOrig = null;
+  else if (item.type === 'fill') { st.fillValues = item.sentences.map(s => s.answers[0]); }
+  else { st.placements = {}; st.dd.cards.forEach(c => st.placements[c.id] = c.correctSlot); }
+  renderQuestion();
+}
+function resetQuestion(item, st) {
+  unscoreIfNeeded(st); st.answered=false; st.revealed=false; st.correct=false; st.selectedChoiceOrig=null; st.selectedCard=null; st.placements={}; st.wrongLogged=false;
+  if (item.type === 'fill') st.fillValues = item.sentences.map(() => '');
+  renderQuestion();
+}
+function renderFeedback(item, st) {
+  const f = document.getElementById('fb'); if (!f) return;
+  if (st.revealed) { f.className = 'feedback info'; f.innerHTML = '<b>Answer shown.</b> ' + escapeHTML(item.explanation); return; }
+  if (!st.answered) { f.className='feedback'; f.innerHTML=''; return; }
+  f.className = 'feedback ' + (st.correct ? 'good' : 'bad'); f.innerHTML = `<b>${st.correct ? 'Correct! 🌸' : 'Not quite.'}</b> ${escapeHTML(item.explanation)}`;
+}
+function renderActions(item, st) {
+  const acts = document.getElementById('acts'); const isLast = pos + 1 === order.length; const prevDisabled = pos === 0 ? ' disabled' : '';
+  const ddReady = isDD(item) && allDDPlaced(st) && !st.answered && !st.revealed;
+  acts.innerHTML = `<button class="btn ghost" id="prevBtn"${prevDisabled}>← Previous</button><button class="btn ghost" id="showBtn">Show answer</button><button class="btn ghost" id="resetQBtn">Reset question</button>${isDD(item) ? `<button class="btn" id="checkBtn"${ddReady ? '' : ' disabled'}>Check answers ✓</button>` : ''}<span class="spacer"></span><button class="btn" id="nextBtn">${isLast ? 'See results →' : 'Next question →'}</button>`;
+  document.getElementById('prevBtn').onclick = () => { if (pos > 0) { pos--; renderQuestion(); } };
+  document.getElementById('showBtn').onclick = () => revealAnswer(item, st);
+  document.getElementById('resetQBtn').onclick = () => resetQuestion(item, st);
+  const checkBtn = document.getElementById('checkBtn'); if (checkBtn) checkBtn.onclick = () => checkDD(item, st);
+  document.getElementById('nextBtn').onclick = () => { pos++; renderQuestion(); };
+}
+function renderResult() {
+  elProg.style.width = '100%'; renderQuestionMap(); const total = order.length; const pct = Math.round(score / total * 100);
+  if (!resultCounted) { const completed = parseInt(lsGet(STORAGE_PREFIX + 'completed') || '0', 10) + 1; lsSet(STORAGE_PREFIX + 'completed', String(completed)); elCompleted.textContent = String(completed); resultCounted = true; }
+  const bestRaw = lsGet(STORAGE_PREFIX + 'best'); const bestNum = bestRaw ? parseInt(bestRaw, 10) : 0; if (score > bestNum) { lsSet(STORAGE_PREFIX + 'best', String(score)); elBest.textContent = String(score); }
+  let badge='', cls=''; if (pct===100) { badge='🌸 Perfect — content fully absorbed'; cls='gold'; } else if (pct>=90) { badge='🌿 Excellent — almost everything stuck'; cls='gold'; } else if (pct>=75) { badge='☕ Solid — review misses, run another round'; cls='silver'; } else if (pct>=50) { badge='📖 Getting there — try one more pass'; cls='bronze'; } else { badge='🍵 Warm-up done — replay to lock it in'; cls='try'; }
+  const reviewHTML = wrongLog.length === 0 ? `<div class="review-list" style="border:0;"><h3>No mistakes this round 🌸</h3></div>` : `<div class="review-list"><h3>Review — ${wrongLog.length} to revisit</h3>${wrongLog.map(w => `<div class="review-item"><div class="qq">${escapeHTML(w.q)}</div><div class="info">${escapeHTML(w.info)}</div></div>`).join('')}</div>`;
+  elCard.innerHTML = `<div class="result"><h2>Round ${round} complete</h2><div class="badge ${cls}">${badge}</div><div class="score-big">${score} / ${total}</div><div class="score-pct">${pct}% correct</div><div class="score-pct">Completed full rounds saved in this browser: ${lsGet(STORAGE_PREFIX + 'completed') || '0'}</div>${reviewHTML}<div class="actions" style="justify-content:center;"><button class="btn" id="againBtn">Play another round ↻</button><button class="btn ghost" id="resetBestBtn">Reset best score</button><button class="btn ghost" id="resetCountBtn">Reset completed count</button></div></div>`;
+  document.getElementById('againBtn').onclick = () => { round++; lsSet(STORAGE_PREFIX + 'round', String(round)); startRound(); };
+  document.getElementById('resetBestBtn').onclick = () => { lsDel(STORAGE_PREFIX + 'best'); elBest.textContent = '—'; const b=document.getElementById('resetBestBtn'); b.textContent='Best score reset ✓'; b.disabled=true; };
+  document.getElementById('resetCountBtn').onclick = () => { lsDel(STORAGE_PREFIX + 'completed'); elCompleted.textContent = '0'; const b=document.getElementById('resetCountBtn'); b.textContent='Completed count reset ✓'; b.disabled=true; };
+}
+startRound();
+</script>
+</body>
+</html>
